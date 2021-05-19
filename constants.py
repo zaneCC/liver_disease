@@ -24,12 +24,14 @@ INDEX = 'Index'
 
 
 # --------------------- 输出文件定义
+ROOT_PATH_WINDOWS = 'E:'
+ROOT_PATH_MAC = '/Users/zhouzhan/Documents/codes/python_code'
 
-SYMP_RECORD_NORMALIZATION_PATH = "/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/病历症状表（规范化）.xlsx"
-MERGE_CSV_PATH = "/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/汇总表.csv"
-SYMP_MAIN_ACC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/主症-伴随症-病历表.csv'
+SYMP_RECORD_NORMALIZATION_PATH = ROOT_PATH_WINDOWS + "/liver_disease/liver_disease/output/病历症状表（规范化）.xlsx"
+MERGE_CSV_PATH = ROOT_PATH_WINDOWS + "/liver_disease/liver_disease/output/汇总表.csv"
+SYMP_MAIN_ACC_PATH = ROOT_PATH_WINDOWS + 'liver_disease/liver_disease/output/主症-伴随症-病历表.csv'
 
-SYMP_MAIN_ACC_TONGUE_DIAGNOSIS_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/主症-伴随症-舌脉象-分型.csv'
-SYMP_MAIN_ACC_DIAGNOSIS_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/主症-伴随症-分型.csv'
+SYMP_MAIN_ACC_TONGUE_DIAGNOSIS_PATH = ROOT_PATH_WINDOWS + '/liver_disease/liver_disease/output/主症-伴随症-舌脉象-分型.csv'
+SYMP_MAIN_ACC_DIAGNOSIS_PATH = ROOT_PATH_WINDOWS + '/liver_disease/liver_disease/output/主症-伴随症-分型.csv'
 
-SELECTION_MERGE_CSV_PATH = "/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/特征选择后-汇总表.csv"
+SELECTION_MERGE_CSV_PATH = ROOT_PATH_WINDOWS + "/liver_disease/liver_disease/output/特征选择后-汇总表.csv"

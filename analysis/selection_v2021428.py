@@ -1,3 +1,6 @@
+OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
+OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
+
 import pandas as pd
 import numpy as np
 import sys
