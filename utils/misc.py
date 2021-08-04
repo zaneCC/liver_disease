@@ -1,12 +1,65 @@
+'''
+    统一绘图工具
+'''
+from typing import Counter
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 class Misc():
 
-    def plotAccuLine(self,accuracies,color='r',dlabel=None):
+    def __init__(self):
+        # 设置字体
+        mpl.rcParams['font.sans-serif'] = [u'simHei']
+        mpl.rcParams['axes.unicode_minus'] = False
         
+
+    def plotAccuLine(self,accuracies,color='r',dlabel=None):
+        plt.ylim((0, 100))
+        plt.ylabel('准确度（单位：百分比）')
+        plt.xlabel('10折交叉验证次数')
         plt.plot(accuracies,color,label=dlabel)
         if dlabel is not None:
             plt.legend()
+
+    def plotData(self,X,y,color='r',dlabel=None):
+        plt.plot(X,y,color,label=dlabel)
+        if dlabel is not None:
+            plt.legend()
+
+    # 绘制证的比例饼图
+    def plotSize(self,y):
+        # Pie chart, where the slices will be ordered and plotted counter-clockwise:
+        # labels = '阳黄证', '阴黄证', '阴阳黄证'
+        labels = '阳黄证', '阴阳黄证'
+        # sizes = [Counter(y==1)[True], Counter(y==2)[True], Counter(y==3)[True]]
+        sizes = [Counter(y==1)[True], Counter(y==2)[True]]
+        # explode = (0, 0, 0)  # only "explode" the 2nd slice (i.e. 'Hogs')
+        explode = (0, 0)
+
+        fig1, ax1 = plt.subplots()
+        patches,l_text,p_text = ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+                shadow=True, startangle=90)
+        ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+        for t in l_text:
+            t.set_size(20)
+        for t in p_text:
+            t.set_size(20)
+
+    def figure(self):
+        plt.figure()
+    
+    def plotAUC(self, fpr, tpr, roc_auc,color, label, title):
+        lw = 2
+        plt.plot(fpr, tpr, color=color,
+                lw=lw, label=label + '(area = %0.2f)' % roc_auc) ###假正率为横坐标，真正率为纵坐标做曲线
+        plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title(title)
+        plt.legend(loc="lower right")
 
         
     def show(self):
@@ -14,30 +67,4 @@ class Misc():
 
 
 # if __name__ == '__main__':
-#     l1 = [0.81481481,0.84615385,0.76923077,0.84615385,0.76923077,0.76923077,
-#     0.80769231,0.76923077,0.76923077,0.76923077]
-#     l2 = [0.81481481,0.84615385,0.84615385,0.84615385,0.73076923,0.69230769,
-#     0.80769231,0.73076923,0.80769231,0.80769231]
-
-#     t = [4,8,6,5]
-
-#     misc = Misc()
-#     misc.plotAccuLine(l1)
-#     misc.show()
-
-    # epochs = [0,1,2,3]
-    # acc = [4,8,6,5]
-    # loss = [3,2,1,4]
     
-    # plt.plot(acc,color='r',label='acc')        # r表示红色
-    # plt.plot(loss,color=(0,0,0),label='loss')  #也可以用RGB值表示颜色
-    
-    #####非必须内容#########
-    # plt.xlabel('epochs')    #x轴表示
-    # plt.ylabel('y label')   #y轴表示
-    # plt.title("chart")      #图标标题表示
-    # plt.legend()            #每条折线的label显示
-    #######################
-    # plt.savefig('test.jpg')  #保存图片，路径名为test.jpg
-
-    plt.show()

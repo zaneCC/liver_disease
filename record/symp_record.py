@@ -2,13 +2,14 @@ import pandas as pd
 import numpy as np
 import re
 import sys
-sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/')
+sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
 import constants
-sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/normalization')
+sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/normalization')
 import symp_record_normalization as srn
 
-PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/data/阴阳黄课题——入院症状.csv'
-TO_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/output/病历症状表（规范化）.xlsx'
+PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/data/阴阳黄课题——入院症状.csv'
+TO_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/病历症状表（规范化）.xlsx'
+
 NOT_SYMPS_DICT = {'为.','日行.','经常','偶发','注意始得','短暂即过','无需药物','可不搔抓','食后半小时以上缓解',
                 '不意亦得','稍察即得','1小时缓解','隐约可见','见处较少','见处较多','每日一次','呈黧黑色',
                 '黄中带黑','微青','深黄','可以忍受','缠绵不愈','抓破肌肤方快','欲反复搔抓','面积大于2cm',
@@ -59,6 +60,8 @@ resultDF = srn.delSYMP(resultDF)
 resultDF[resultDF>0] = 1
 
 print(resultDF.columns.values.tolist())
+
+
 
 # 保存文件
 resultDF.to_excel(TO_PATH)

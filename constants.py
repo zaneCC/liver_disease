@@ -1,3 +1,6 @@
+OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
+OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
+
 # 公共常量
 
 # 病人 id
@@ -22,16 +25,34 @@ TRANSFORMED_GVALUE = 'TRANSFORMED_GVALUE'
 # panads index
 INDEX = 'Index'
 
+# 类别
+CLASS_1 = 1
+CLASS_2 = 2
+CLASS_3 = 3
 
 # --------------------- 输出文件定义
-ROOT_PATH_WINDOWS = 'E:'
-ROOT_PATH_MAC = '/Users/zhouzhan/Documents/codes/python_code'
+# ROOT_PATH_WINDOWS = 'E:'
+# ROOT_PATH_MAC = '/Users/zhouzhan/Documents/codes/python_code'
+OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
+OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
+OS_PATH = OS_MAC_PATH
 
-SYMP_RECORD_NORMALIZATION_PATH = ROOT_PATH_WINDOWS + "/liver_disease/liver_disease/output/病历症状表（规范化）.xlsx"
-MERGE_CSV_PATH = ROOT_PATH_WINDOWS + "/liver_disease/liver_disease/output/汇总表.csv"
-SYMP_MAIN_ACC_PATH = ROOT_PATH_WINDOWS + 'liver_disease/liver_disease/output/主症-伴随症-病历表.csv'
+PATH_DIAGNOSIS = OS_PATH + '/data/分型.xlsx'
+PATH_DIAGNOSIS_NORMALIZATION = OS_PATH + '/output/分型数值化.xlsx'
 
-SYMP_MAIN_ACC_TONGUE_DIAGNOSIS_PATH = ROOT_PATH_WINDOWS + '/liver_disease/liver_disease/output/主症-伴随症-舌脉象-分型.csv'
-SYMP_MAIN_ACC_DIAGNOSIS_PATH = ROOT_PATH_WINDOWS + '/liver_disease/liver_disease/output/主症-伴随症-分型.csv'
 
-SELECTION_MERGE_CSV_PATH = ROOT_PATH_WINDOWS + "/liver_disease/liver_disease/output/特征选择后-汇总表.csv"
+SYMP_RECORD_NORMALIZATION_PATH = OS_PATH + "/output/病历症状表（规范化）.xlsx"
+MERGE_CSV_PATH = OS_PATH + "/output/汇总表.csv"
+SYMP_MAIN_ACC_PATH = OS_PATH + '/output/主症-伴随症-病历表.csv'
+
+SYMP_MAIN_ACC_TONGUE_DIAGNOSIS_PATH = OS_PATH + '/output/主症-伴随症-舌脉象-分型.csv'
+SYMP_MAIN_ACC_DIAGNOSIS_PATH = OS_PATH + '/output/主症-伴随症-分型.csv'
+
+SELECTION_MERGE_CSV_PATH = OS_PATH + "/output/特征选择后-汇总表.csv"
+
+# 采样输出文件
+
+SMOTE_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE-采样-汇总表.csv'
+SMOTE_BORDERLINE1_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_Borderline1-采样-汇总表.csv'
+SMOTE_D_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_D-采样-汇总表.csv'
+SMOTE_Borderline_D_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_Borderline_D-采样-汇总表.csv'

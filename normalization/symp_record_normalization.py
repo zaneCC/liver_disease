@@ -17,8 +17,12 @@ def combineSYMP(df):
     del df[' 身目尿黄'] 
     del df['随后出身目尿黄']
 
-    df['腹胀'] = df['腹胀'] + df[' 腹胀'] + df['上腹胀'] + df['腹胀食后'] + df['阵发性腹胀痛'] + df['上腹胀满'] + df['腹胀大'] + df['腹部饱满'] + df['前出腹胀大'] + df['剑突下疼痛'] + df['胃脘不适'] + df['胃脘隐痛不适'] + df['胃脘部不适']+ df['上腹胀痛不适']
-    del df[' 腹胀'] 
+    df['计算力下降'] = df['计算力下降'] + df['计算力']
+    del df['计算力']
+    
+    # TODO
+    df['腹胀'] = df['腹胀'] + df[' 腹胀'] + df['上腹胀'] + df['腹胀食后'] + df['阵发性腹胀痛'] + df['上腹胀满'] + df['腹胀大'] + df['腹部饱满'] + df['前出腹胀大'] + df['胃脘不适'] + df['胃脘隐痛不适'] + df['胃脘部不适']+ df['上腹胀痛不适']
+    del df[' 腹胀']   
     del df['上腹胀'] 
     del df['腹胀食后'] 
     del df['阵发性腹胀痛'] 
@@ -31,17 +35,18 @@ def combineSYMP(df):
     del df['胃脘隐痛不适'] 
     del df['胃脘部不适']
     del df['胃脘不适']
-    del df['剑突下疼痛'] 
+    
 
 
     # 上腹胀痛不适 = 腹胀 + 腹痛
-    df['腹痛'] = df['腹痛'] + df['上腹胀痛不适'] + df['腹痛 '] + df['腹痛感不'] + df['胀痛感'] + df['脐疼痛'] + df['脐隐痛']
+    df['腹痛'] = df['腹痛'] + df['上腹胀痛不适'] + df['腹痛 '] + df['腹痛感不'] + df['胀痛感'] + df['脐疼痛'] + df['脐隐痛'] + df['剑突下疼痛']
     del df['上腹胀痛不适'] 
     del df['腹痛 '] 
     del df['腹痛感不']
     del df['胀痛感'] 
     del df['脐疼痛']
     del df['脐隐痛']
+    del df['剑突下疼痛'] 
 
 
     df['纳差'] = df['纳差'] + df['食纳下降'] + df['食欲下降'] + df['纳少'] + df['纳食少']
@@ -191,9 +196,9 @@ def doNormalization(row, resultDF):
     if _symp!=0:
         resultDF['身目黄染'][_id] = 1
 
-    _symp = getattr(row, '身目尿黄')
-    if _symp!=0:
-        resultDF['身目黄染'][_id] = 1
+    # _symp = getattr(row, '身目尿黄')
+    # if _symp!=0:
+    #     resultDF['身目黄染'][_id] = 1
 
     _symp = getattr(row, '黄疸')
     if _symp!=0:
@@ -212,6 +217,12 @@ def doNormalization(row, resultDF):
     # if _symp!=0:
     #     resultDF['身目尿黄'][_id] = 1
 
+    # 身目尿黄，拆成：身目黄染+尿黄
+    _symp = getattr(row, '身目尿黄')
+    if _symp!=0:
+        resultDF['身目黄染'][_id] = 1
+        resultDF['尿黄'][_id] = 1
+
 
     return resultDF
 
@@ -229,12 +240,12 @@ def delSYMP(df):
 
     # TODO 身目尿黄问题
     # del df['身目黄染']
-    # del df['身目尿黄']
+    del df['身目尿黄']
     del df['皮肤目黄']
     del df['黄疸']
     del df['身黄']
     del df['目黄']
-    del df['尿黄']
+    # del df['尿黄']
 
     del df['身目微黄']
     del df['小便深黄']
