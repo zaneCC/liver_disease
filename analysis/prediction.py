@@ -28,9 +28,11 @@ import numpy as np
 import os
 import sys
 sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
+
 # sys.path.append(r'E:/liver_disease/liver_disease')
 import constants
 import utils.misc as misc
+import analysis.work.work_2021615 as work
 from sklearn.metrics import accuracy_score,confusion_matrix 
 from sklearn.model_selection import train_test_split,validation_curve
 from sklearn.preprocessing import StandardScaler
@@ -49,21 +51,18 @@ from sklearn.metrics import roc_auc_score
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import roc_curve, auc
 from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_score
 
-
-# 汇总表-未做特征选择
-# PATH = constants.MERGE_CSV_PATH
-# 汇总表-特征选择后
-# PATH = constants.SELECTION_MERGE_CSV_PATH
-# 人工选择特征
-# PATH = constants.SYMP_MAIN_ACC_DIAGNOSIS_PATH
-# 汇总表-SMOTE过采样后
-# PATH = constants.SMOTE_MERGE_CSV_PATH
-# SMOTE Borderline1 采样
-# PATH = constants.SMOTE_BORDERLINE1_MERGE_CSV_PATH
-# SMOTE_D 采样
-# PATH = constants.SMOTE_D_MERGE_CSV_PATH
-# SMOTE_BORDERLINE_D 采样
+'''
+汇总表-未做特征选择:    MERGE_CSV_PATH
+汇总表-特征选择后:     SELECTION_MERGE_CSV_PATH
+人工选择特征:         SYMP_MAIN_ACC_DIAGNOSIS_PATH
+SMOTE:              SMOTE_MERGE_CSV_PATH
+SMOTE Borderline1:  SMOTE_BORDERLINE1_MERGE_CSV_PATH
+SMOTE_D:            SMOTE_D_MERGE_CSV_PATH
+SMOTE_BORDERLINE_D: SMOTE_Borderline_D_CSV_PATH
+'''
 PATH = constants.SMOTE_Borderline_D_CSV_PATH
 
 # 可视化
@@ -73,11 +72,9 @@ NEW_PATH = OS_WINDOWS_PATH + '/output/dot/dot_data_new.txt'
 
 class Prediction():
     
-    def __init__(self):
-        self.misc = misc.Misc()
-        self.isShow = True # 是否展示图像
-
-        df = pd.read_csv(PATH)
+    # 加载数据
+    def initData(self,path=PATH):
+        df = pd.read_csv(path)
         cols = df.columns.values.tolist()
         # cols.remove('Unnamed: 0')
         # cols.remove('INHOSPTIAL_ID')
@@ -88,6 +85,10 @@ class Prediction():
 
         self.split()
 
+    def __init__(self):
+        self.misc = misc.Misc()
+        self.isShow = True # 是否展示图像
+        self.initData()
     
     def split(self):
         X_train,X_test,y_train,y_test = train_test_split(self.X,self.y,test_size = 0.2,random_state=0)
@@ -162,6 +163,61 @@ class Prediction():
             # print(name,ans * 100)
             print('模型:',name)
             print(classification_report(pre,self.y_test))
+            # precision = precision_score(self.y_test, pre, average=None)
+            # f1 = f1_score(self.y_test, pre, average=None)
+            # print('precision:',precision)
+            # print('f1:',f1)
+            
+    ''' 
+        求均值、标准差
+    '''
+    def predictAverage(self,regs, k=6):
+        # 先在work_2021615 中执行 resampling，生成样本
+
+        for key,(name, i) in enumerate(regs):
+            print('模型:',name)
+            aver_f1, aver_precision, var_precision_0, var_precision_1, var_f1_0, var_f1_1 = [], [], [], [], [], []
+            std_f1, std_precision = [],[]
+            for j in range(k):
+
+                # SMOTE_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ '实验' +'/对比实验/'+ str(j) +'/SMOTE-采样-汇总表.csv'
+                # SMOTE_BORDERLINE1_COMPARE_MERGE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ '实验' +'/对比实验/'+ str(j) +'/SMOTE_Borderline1-采样-汇总表.csv'
+                # SMOTE_D_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ '实验' +'/对比实验/'+ str(j) +'/SMOTE_D-采样-汇总表.csv'
+                # SMOTE_Borderline_D_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ '实验' +'/对比实验/'+ str(j) +'/SMOTE_Borderline_D-采样-汇总表.csv'
+                
+                ''' 修改论文数据的时候使用 '''
+                SMOTE_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE-采样-汇总表.csv'
+                SMOTE_BORDERLINE1_COMPARE_MERGE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE_Borderline1-采样-汇总表.csv'
+                SMOTE_D_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE_D-采样-汇总表.csv'
+                SMOTE_Borderline_D_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE_Borderline_D-采样-汇总表.csv'
+                path = SMOTE_Borderline_D_COMPARE_CSV_PATH
+                self.initData(path)
+
+                i.fit(self.X_train,self.y_train)
+                pre = i.predict(self.X_test)
+                f1 = f1_score(self.y_test, pre, average=None)
+
+                var_f1_0.append(f1[0])
+                var_f1_1.append(f1[1])
+
+                precision = precision_score(self.y_test, pre, average=None)
+
+                var_precision_0.append(precision[0])
+                var_precision_1.append(precision[1])
+
+            std_precision.append(np.std(var_precision_0))
+            std_precision.append(np.std(var_precision_1))
+            aver_precision.append(np.mean(var_precision_0))
+            aver_precision.append(np.mean(var_precision_1))
+            std_f1.append(np.std(var_f1_0))
+            std_f1.append(np.std(var_f1_1))
+            aver_f1.append(np.mean(var_f1_0))
+            aver_f1.append(np.mean(var_f1_1))
+            
+            print('std_precision: ',std_precision)
+            print('std_f1: ', std_f1)
+            print('aver_f1:',aver_f1)
+            print('aver_precision', aver_precision)
 
     # 交叉验证
     # 问题： 因为数据不平衡，使用交叉验证有可能拆分结果仍不均衡，需要输出每轮交叉验证中不同类别拆分的样本数
@@ -320,14 +376,16 @@ if __name__ == "__main__":
             ]
     # estimators = [pre.logisiticRegression(), pre.SVM(), pre.decisionTree(), pre.randomForestClassifier(), pre.adaboostClassifier()]
     pre.fit(regs)
-    pre.predict(regs)
+    # pre.predict(regs)
+    pre.predictAverage(regs)
+    
 
     # 交叉验证
     # pre.crossScore(regs)
     # PCA和标准化
     # pre.pipline(estimators)
 
-    pre.roc(regs)
+    # pre.roc(regs)
     
     # 决策树可视化
     # pre.viewTree()

@@ -83,6 +83,11 @@ def make_sample(old_feature_data, danger_index_data,n):
                 new_feature_data.append(new_sij)
     # 将原少数类样本点与新产生的少数类样本点整合
     new_feature_data = np.array(new_feature_data)
+    # 标记 1 为合成采样样本； 标记 0 为原始样本
+    new = [1 for x in range(len(new_feature_data))]
+    old = [0 for x in range(len(old_feature_data))]
+    new_feature_data = np.column_stack((new_feature_data, np.array(new)))
+    old_feature_data = np.column_stack((old_feature_data, np.array(old)))
     new_min_feature_data = np.vstack((new_feature_data, old_feature_data))
     # TODO 数量少了一点
     return new_min_feature_data
@@ -103,6 +108,9 @@ def SMOTE_Borderline_D(imbalanced_data_arr2):
     # 原始少数样本的标签值
     old_label_data = minor_data_arr2[0][-1]
 
+    major_feature_data = major_data_arr2[:, : -1]
+    major_label_data = np.array([major_data_arr2[0][-1]] * len(major_feature_data))
+
     danger_index = in_danger(imbalanced_featured_data, old_feature_data, old_label_data, imbalanced_label_data)
     # 少数样本中噪音集合，也就是最终要产生新样本的集合
     danger_index_data = _safe_indexing(old_feature_data, danger_index)
@@ -113,8 +121,13 @@ def SMOTE_Borderline_D(imbalanced_data_arr2):
     new_labels_data = np.array([old_label_data] * len(new_feature_data))
     new_minor_data_arr2 = np.column_stack((new_feature_data, new_labels_data))
     
+    # 标记多数类样本为0，表示未合成采样
+    tag_major = [0 for x in range(len(major_data_arr2))]
+    major_feature_data = np.column_stack((major_feature_data, tag_major))
+    new_major_data_arr2 = np.column_stack((major_feature_data, major_label_data))
+
     # balanced_data_arr2 = np.row_stack((new_minor_data_arr2, major_data_arr2))
-    balanced_data_arr2 = np.row_stack((major_data_arr2, new_minor_data_arr2))
+    balanced_data_arr2 = np.row_stack((new_major_data_arr2, new_minor_data_arr2))
     # 将少数类数据集和多数据类数据集合并，并对样本数据进行打乱重排，
     # balanced_data_arr2 = concat_and_shuffle_data(new_minor_data_arr2, major_data_arr2)
     return balanced_data_arr2

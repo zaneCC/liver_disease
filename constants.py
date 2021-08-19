@@ -36,6 +36,7 @@ CLASS_3 = 3
 OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
 OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
 OS_PATH = OS_MAC_PATH
+PAPER_VERSION = '论文1.0'
 
 PATH_DIAGNOSIS = OS_PATH + '/data/分型.xlsx'
 PATH_DIAGNOSIS_NORMALIZATION = OS_PATH + '/output/分型数值化.xlsx'
@@ -56,3 +57,8 @@ SMOTE_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE-采样-汇总表.csv'
 SMOTE_BORDERLINE1_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_Borderline1-采样-汇总表.csv'
 SMOTE_D_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_D-采样-汇总表.csv'
 SMOTE_Borderline_D_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_Borderline_D-采样-汇总表.csv'
+
+
+
+
+
