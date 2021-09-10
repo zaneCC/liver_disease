@@ -52,11 +52,13 @@ SYMP_MAIN_ACC_DIAGNOSIS_PATH = OS_PATH + '/output/主症-伴随症-分型.csv'
 SELECTION_MERGE_CSV_PATH = OS_PATH + "/output/特征选择后-汇总表.csv"
 
 # 采样输出文件
-
+RANDOM_OVER_SAMPLER_CSV_PATH = OS_PATH + '/output/SMOTE/随机过采样-汇总表.csv'
 SMOTE_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE-采样-汇总表.csv'
 SMOTE_BORDERLINE1_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_Borderline1-采样-汇总表.csv'
 SMOTE_D_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_D-采样-汇总表.csv'
 SMOTE_Borderline_D_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_Borderline_D-采样-汇总表.csv'
+
+
 
 
 

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from typing import Counter
-from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE
+from imblearn.over_sampling import SMOTE, ADASYN, BorderlineSMOTE, RandomOverSampler
 from sklearn.datasets import make_classification
 from sklearn.svm import LinearSVC
 import sys
@@ -17,11 +17,11 @@ PATH = constants.MERGE_CSV_PATH
 # SMOTE 采样
 # TO_PATH = constants.SMOTE_MERGE_CSV_PATH
 # SMOTE Borderline1 采样
-TO_PATH = constants.SMOTE_BORDERLINE1_MERGE_CSV_PATH
+# TO_PATH = constants.SMOTE_BORDERLINE1_MERGE_CSV_PATH
+TO_PATH = constants.RANDOM_OVER_SAMPLER_CSV_PATH
 
 def read_data():
     df = pd.read_csv(PATH)
-    
 
     del df['INHOSPTIAL_ID']
     return df
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     y = data[:,-1]
 
     print(sorted(Counter(y).items()))
-    X_resampled, y_resampled = SMOTE().fit_resample(X, y)
+    X_resampled, y_resampled = RandomOverSampler(random_state=0).fit_resample(X, y)
     print(sorted(Counter(y_resampled).items()))
 
     cols = df.columns.values.tolist()

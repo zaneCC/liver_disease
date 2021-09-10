@@ -62,8 +62,11 @@ SMOTE:              SMOTE_MERGE_CSV_PATH
 SMOTE Borderline1:  SMOTE_BORDERLINE1_MERGE_CSV_PATH
 SMOTE_D:            SMOTE_D_MERGE_CSV_PATH
 SMOTE_BORDERLINE_D: SMOTE_Borderline_D_CSV_PATH
+随机过采样:           RANDOM_OVER_SAMPLER_CSV_PATH
 '''
-PATH = constants.SMOTE_Borderline_D_CSV_PATH
+PATH = constants.RANDOM_OVER_SAMPLER_CSV_PATH
+
+
 
 # 可视化
 TO_VIEW_PATH = OS_WINDOWS_PATH + '/output/决策树可视化.pdf'
@@ -376,8 +379,8 @@ if __name__ == "__main__":
             ]
     # estimators = [pre.logisiticRegression(), pre.SVM(), pre.decisionTree(), pre.randomForestClassifier(), pre.adaboostClassifier()]
     pre.fit(regs)
-    # pre.predict(regs)
-    pre.predictAverage(regs)
+    pre.predict(regs)
+    # pre.predictAverage(regs)
     
 
     # 交叉验证
@@ -385,7 +388,7 @@ if __name__ == "__main__":
     # PCA和标准化
     # pre.pipline(estimators)
 
-    # pre.roc(regs)
+    pre.roc(regs)
     
     # 决策树可视化
     # pre.viewTree()
