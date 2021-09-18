@@ -25,11 +25,11 @@ from sklearn.metrics import accuracy_score,confusion_matrix
 # 汇总表-SMOTE过采样后
 # PATH = constants.SMOTE_MERGE_CSV_PATH
 # SMOTE Borderline1 采样
-# PATH = constants.SMOTE_BORDERLINE1_MERGE_CSV_PATH
+PATH = constants.SMOTE_BORDERLINE1_MERGE_CSV_PATH
 # SMOTE_D 采样
 # PATH = constants.SMOTE_D_MERGE_CSV_PATH
 # SMOTE_BORDERLINE_D 采样
-PATH = constants.SMOTE_Borderline_D_CSV_PATH
+# PATH = constants.SMOTE_Borderline_D_CSV_PATH
 
 class DataAnalysis():
 
@@ -179,7 +179,7 @@ class DataAnalysis():
 if __name__ == '__main__':
     dataAna = DataAnalysis()
     # 统计症状频次
-    # dicSym = dataAna.showCountSym()
+    dicSym = dataAna.showCountSym()
     # sortDic = sorted(dicSym.items(), key=lambda e:e[1], reverse=True)
     # print(sortDic[:40])
 
@@ -193,4 +193,4 @@ if __name__ == '__main__':
     # dataAna.EDA()
 
     # 获取合成采样后症状特点
-    dataAna.getSMOTESym()
+    # dataAna.getSMOTESym()

@@ -58,9 +58,9 @@ SMOTE_BORDERLINE1_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_Borderline1-�
 SMOTE_D_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_D-采样-汇总表.csv'
 SMOTE_Borderline_D_CSV_PATH = OS_PATH + '/output/SMOTE/SMOTE_Borderline_D-采样-汇总表.csv'
 
-
-
-
-
-
-
+# 分析数据
+ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH = OS_PATH + '/output/SMOTE/'+PAPER_VERSION+'/随机过采样-汇总表.csv'
+ANALYSIS_SMOTE_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/'+PAPER_VERSION+'/SMOTE-采样-汇总表.csv'
+ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/'+PAPER_VERSION+'/SMOTE_Borderline1-采样-汇总表.csv'
+ANALYSIS_SMOTE_D_MERGE_CSV_PATH = OS_PATH + '/output/SMOTE/'+PAPER_VERSION+'/SMOTE_D-采样-汇总表.csv'
+ANALYSIS_SMOTE_Borderline_D_CSV_PATH = OS_PATH + '/output/SMOTE/'+PAPER_VERSION+'/SMOTE_Borderline_D-采样-汇总表.csv'

@@ -58,11 +58,11 @@ from sklearn.metrics import precision_score
 汇总表-未做特征选择:    MERGE_CSV_PATH
 汇总表-特征选择后:     SELECTION_MERGE_CSV_PATH
 人工选择特征:         SYMP_MAIN_ACC_DIAGNOSIS_PATH
+随机过采样:           RANDOM_OVER_SAMPLER_CSV_PATH
 SMOTE:              SMOTE_MERGE_CSV_PATH
 SMOTE Borderline1:  SMOTE_BORDERLINE1_MERGE_CSV_PATH
 SMOTE_D:            SMOTE_D_MERGE_CSV_PATH
 SMOTE_BORDERLINE_D: SMOTE_Borderline_D_CSV_PATH
-随机过采样:           RANDOM_OVER_SAMPLER_CSV_PATH
 '''
 PATH = constants.RANDOM_OVER_SAMPLER_CSV_PATH
 
@@ -129,29 +129,36 @@ class Prediction():
         knn=sorted(score,reverse=True)[:1]
         return knn
 
+    # TODO 运行前改参
     # 决策树
     def decisionTree(self):
-        # dt = DecisionTreeClassifier(max_depth=5)
-        dt = DecisionTreeClassifier()
+        # 随机过采样-最优参数：{'criterion': 'gini', 'max_depth': 15, 'min_samples_split': 2}   AUC:0.81
+        # SMOTE-最优参数：{'criterion': 'entropy', 'max_depth': 14, 'min_samples_split': 6}   AUC:0.82
+        # SMOTE_Borderline1-最优参数：{'criterion': 'entropy', 'max_depth': 20, 'min_samples_split': 6} AUC:0.83
+        # SMOTE_D-最优参数：{'criterion': 'gini', 'max_depth': 17, 'min_samples_split': 10}     AUC:0.86
+        # SMOTE_BORDERLINE_D-最优参数：{'criterion': 'gini', 'max_depth': 18, 'min_samples_split': 10}  AUC:0.82
+        dt = DecisionTreeClassifier(criterion='gini',max_depth=15,min_samples_split=2)
         return dt
 
+    # TODO 运行前改参
     # 随机森林
     def randomForestClassifier(self):
-        # 未调参  80.84 %
-        # rfc = RandomForestClassifier(n_estimators=100, criterion='entropy')
+        # 随机过采样-最优参数:         {'criterion': 'entropy', 'max_depth': 20, 'max_features': 0.2, 'min_samples_split': 2, 'n_estimators': 40}    AUC:0.82
+        # SMOTE-最优参数：            {'criterion': 'entropy', 'max_depth': 12, 'max_features': 0.4, 'min_samples_split': 4, 'n_estimators': 16}    AUC:0.80
+        # SMOTE_Borderline1-最优参数：{'criterion': 'gini', 'max_depth': 13, 'max_features': 0.2, 'min_samples_split': 2, 'n_estimators': 14}   AUC:0.83
+        # SMOTE_D-最优参数：          {'criterion': 'gini', 'max_depth': 13, 'max_features': 0.2, 'min_samples_split': 2, 'n_estimators': 12} AUC:0.86
+        # SMOTE_BORDERLINE_D-最优参数:{'criterion': 'entropy', 'max_depth': 14, 'max_features': 0.6, 'min_samples_split': 2, 'n_estimators': 20}   AUC:0.85
+        return RandomForestClassifier(criterion='entropy', max_depth=20, max_features=0.2, min_samples_split=2, n_estimators=40)    
 
-        # 使用调参后的模型 81.61 %
-        # {'criterion': 'gini','max_depth': 3, 'max_features': 0.4,'min_samples_split': 3,'n_estimators': 10}
-        return RandomForestClassifier(n_estimators=10, criterion='gini', max_features=0.4, min_samples_split=3, max_depth=3)
-
+    # TODO 运行前改参
     # adaboost
     def adaboostClassifier(self):
-        # 未调参 82.38 %
-        # return AdaBoostClassifier(n_estimators=100)
-
-        # 调参后  82.76 %
-        # 'algorithm': 'SAMME.R'  'learning_rate': 0.2  'n_estimators': 2, SAMME.R > SAMME
-        return AdaBoostClassifier(n_estimators=100, learning_rate=0.2, algorithm='SAMME.R')
+        # 随机过采样-最优参数：          {'algorithm': 'SAMME.R', 'learning_rate': 0.6, 'n_estimators': 60}   AUC:0.70
+        # SMOTE-最优参数：             {'algorithm': 'SAMME.R', 'learning_rate': 0.4, 'n_estimators': 100}   AUC:0.75
+        # SMOTE_Borderline1-最优参数： {'algorithm': 'SAMME.R', 'learning_rate': 0.8, 'n_estimators': 140}   AUC:0.77
+        # SMOTE_D-最优参数：           {'algorithm': 'SAMME.R', 'learning_rate': 1, 'n_estimators': 60}
+        # SMOTE_BORDERLINE_D-最优参数：{'algorithm': 'SAMME.R', 'learning_rate': 1, 'n_estimators': 60}     AUC:0.84
+        return AdaBoostClassifier(algorithm='SAMME.R',learning_rate=0.6,n_estimators=60)
 
     def fit(self,regs):
         for key,(name, i) in enumerate(regs):
@@ -189,11 +196,12 @@ class Prediction():
                 # SMOTE_Borderline_D_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ '实验' +'/对比实验/'+ str(j) +'/SMOTE_Borderline_D-采样-汇总表.csv'
                 
                 ''' 修改论文数据的时候使用 '''
-                SMOTE_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE-采样-汇总表.csv'
-                SMOTE_BORDERLINE1_COMPARE_MERGE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE_Borderline1-采样-汇总表.csv'
-                SMOTE_D_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE_D-采样-汇总表.csv'
-                SMOTE_Borderline_D_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE_Borderline_D-采样-汇总表.csv'
-                path = SMOTE_Borderline_D_COMPARE_CSV_PATH
+                RANDOM_OVER_SAMPLER_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/随机过采样-采样-汇总表.csv'
+                # SMOTE_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE-采样-汇总表.csv'
+                # SMOTE_BORDERLINE1_COMPARE_MERGE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE_Borderline1-采样-汇总表.csv'
+                # SMOTE_D_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE_D-采样-汇总表.csv'
+                # SMOTE_Borderline_D_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ constants.PAPER_VERSION +'/对比实验/'+ str(j) +'/SMOTE_Borderline_D-采样-汇总表.csv'
+                path = RANDOM_OVER_SAMPLER_COMPARE_CSV_PATH
                 self.initData(path)
 
                 i.fit(self.X_train,self.y_train)
@@ -378,9 +386,9 @@ if __name__ == "__main__":
             # ('NB', pre.NB())
             ]
     # estimators = [pre.logisiticRegression(), pre.SVM(), pre.decisionTree(), pre.randomForestClassifier(), pre.adaboostClassifier()]
-    pre.fit(regs)
-    pre.predict(regs)
-    # pre.predictAverage(regs)
+    # pre.fit(regs)
+    # pre.predict(regs)
+    pre.predictAverage(regs)
     
 
     # 交叉验证
