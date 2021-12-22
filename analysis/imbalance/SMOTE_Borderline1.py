@@ -4,8 +4,9 @@ from sklearn.utils import _safe_indexing
 from base_sampler import *
 import numpy as np
 
-ROOT_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/analysis/imbalance/'
-
+OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
+OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
+ROOT_PATH = OS_WINDOWS_PATH + '/analysis/imbalance/'
 
 # 处于多数类与少数类边缘的样本
 def in_danger(imbalanced_featured_data, old_feature_data, old_label_data, imbalanced_label_data):

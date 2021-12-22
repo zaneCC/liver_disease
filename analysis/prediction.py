@@ -20,16 +20,16 @@
 OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
 OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
 from typing import Counter
-# import pydotplus,graphviz
-# from IPython.display import Image
+import pydotplus,graphviz
+from IPython.display import Image
 from sklearn import tree
 import pandas as pd
 import numpy as np
 import os
 import sys
-sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
+# sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
 
-# sys.path.append(r'E:/liver_disease/liver_disease')
+sys.path.append(r'E:/liver_disease/liver_disease')
 import constants
 import utils.misc as misc
 import analysis.work.work_2021615 as work
@@ -64,7 +64,7 @@ SMOTE Borderline1:  SMOTE_BORDERLINE1_MERGE_CSV_PATH
 SMOTE_D:            SMOTE_D_MERGE_CSV_PATH
 SMOTE_BORDERLINE_D: SMOTE_Borderline_D_CSV_PATH
 '''
-PATH = constants.RANDOM_OVER_SAMPLER_CSV_PATH
+PATH = constants.SMOTE_D_MERGE_CSV_PATH
 
 
 
@@ -137,7 +137,7 @@ class Prediction():
         # SMOTE_Borderline1-最优参数：{'criterion': 'entropy', 'max_depth': 20, 'min_samples_split': 6} AUC:0.83
         # SMOTE_D-最优参数：{'criterion': 'gini', 'max_depth': 17, 'min_samples_split': 10}     AUC:0.86
         # SMOTE_BORDERLINE_D-最优参数：{'criterion': 'gini', 'max_depth': 18, 'min_samples_split': 10}  AUC:0.82
-        dt = DecisionTreeClassifier(criterion='gini',max_depth=15,min_samples_split=2)
+        dt = DecisionTreeClassifier(criterion='gini',max_depth=5)
         return dt
 
     # TODO 运行前改参
@@ -245,39 +245,37 @@ class Prediction():
             print("std is {:.2f} %".format(accuracies.std()*100)) # 标准偏差估计分数
         if self.isShow:
             self.misc.show()
-
-    def pipline(self,estimators):
-        # pipe_lr = LogisticRegression(random_state=1)
-        for i in estimators:
-            pipe_lr = Pipeline([('sc', StandardScaler()),
-                        ('pca', PCA(n_components=10)),
-                        ('clf', i)
-                        ])
-            pipe_lr.fit(self.X_train, self.y_train)
-            accuracies = pipe_lr.score(self.X_test, self.y_test)
-            print("accuracy is {:.2f} %".format(accuracies.mean()*100))
     
     # 决策树可视化
-    # def viewTree(self):
-        # clf = self.decisionTree()
-        # #拟合模型
-        # clf.fit(self.X_train, self.y_train)
+    def viewTree(self):
+        clf = self.decisionTree()
+        #拟合模型
+        clf.fit(self.X_train, self.y_train)
+        pre = clf.predict(self.X_test)
+        print(classification_report(pre,self.y_test))
+        regs = [
+            ('Decision Tree',clf)
+            # ('NB', pre.NB())
+            ]
+        self.roc(regs)
+        # dot_data = tree.export_graphviz(clf, out_file=None)
 
-        # dot_data = tree.export_graphviz(clf, out_file=None,
-        #                         feature_names=self.X.columns,
-        #                         class_names='ZHENGHOU1',
-        #                         filled=True, rounded=True,
-        #                         special_characters=True)
-        # graph = pydotplus.graph_from_dot_data(dot_data)
-        # # graph [fontname="Microsoft Yahei"]
-        # # 使用ipython的终端jupyter notebook显示。
-        # # Image(graph.create_png())
-        # # 如果没有ipython的jupyter notebook，可以把此图写到pdf文件里，在pdf文件里查看。
-        # # graph.write_pdf(TO_VIEW_PATH) 
+        dot_data = tree.export_graphviz(clf, out_file=None,
+                                feature_names=self.X.columns,
+                                class_names=['1','2'],
+                                filled=True, rounded=True,
+                                special_characters=True
+                                )
+        graph = pydotplus.graph_from_dot_data(dot_data)
+        # graph [fontname="Microsoft Yahei"]
+        # 使用ipython的终端jupyter notebook显示。
+        # Image(graph.create_png())
+        # 如果没有ipython的jupyter notebook，可以把此图写到pdf文件里，在pdf文件里查看。
+        graph.write_pdf(TO_VIEW_PATH) 
 
-        # f = open(OLD_PATH, 'w') 
-        # f.write(dot_data) 
-        # f.close()
+        f = open(OLD_PATH, 'w') 
+        f.write(dot_data) 
+        f.close()
 
     # 解决决策树可视化乱码问题
     def font_conf(self, f_old, f_new, filename, view_path):
@@ -301,50 +299,40 @@ class Prediction():
         os.system('dot -Tpdf ' + filename + ' -o ' + view_path)
 
     # 随机森林可视化（输出所有决策树PDF图）
-    # def test_RF(self):
-    #     clf = pre.randomForestClassifier()
-    #     clf.fit(self.X_train, self.y_train)
-
-    #     # 将所有决策树输出
-    #     Estimators = clf.estimators_
-    #     treeCount = 0
-    #     index_paths = []
-    #     root_path = OS_WINDOWS_PATH + '/output/dot/dot_data_'
-    #     # 写入绘制文件
-    #     for index, model in enumerate(Estimators):
-    #         # filename = 'iris_' + str(index) + '.pdf'
-    #         dot_data = tree.export_graphviz(model , out_file=None,
-    #                             feature_names=self.X.columns,
-    #                             class_names='ZHENGHOU1',
-    #                             filled=True, rounded=True,
-    #                             special_characters=True)
-    #         graph = pydotplus.graph_from_dot_data(dot_data)
-    #         # 使用ipython的终端jupyter notebook显示。
-    #         path = root_path + str(index) + '.txt'
-    #         index_paths.append(index)
-    #         f = open(path, 'w') 
-    #         f.write(dot_data) 
-    #         f.close()
-    #         treeCount += 1
-
-        # 保存PDF图片
-        # for i in range(treeCount):
-        #     f_old = open(root_path + str(index_paths[i]) + '.txt','r')
-        #     f_new = open(root_path + 'new_' + str(index_paths[i]) + '.txt', 'w', encoding='utf-8') 
-        #     filename = OS_WINDOWS_PATH + '/output/dot/' + 'dot_data_new_' + str(index_paths[i]) + '.txt'
-        #     to_path =  OS_WINDOWS_PATH + '/output/rf/tree/' +  'dot_data_new_' + str(index_paths[i]) + '.pdf'
-
-        #     self.font_conf(f_old,f_new, filename, to_path)
-
-    # 使用随机森林，输出特征重要性
-    def importantFeaturesRF(self):
+    def test_RF(self):
         clf = pre.randomForestClassifier()
         clf.fit(self.X_train, self.y_train)
-        feat_labels = self.X.columns
-        importances = clf.feature_importances_
-        indices = np.argsort(importances)[::-1]
-        for f in range(self.X_train.shape[1]):
-            print("%2d) %-*s %f" % (f + 1, 30, feat_labels[indices[f]], importances[indices[f]]))
+
+        # 将所有决策树输出
+        Estimators = clf.estimators_
+        treeCount = 0
+        index_paths = []
+        root_path = OS_WINDOWS_PATH + '/output/dot/dot_data_'
+        # 写入绘制文件
+        for index, model in enumerate(Estimators):
+            # filename = 'iris_' + str(index) + '.pdf'
+            dot_data = tree.export_graphviz(model , out_file=None,
+                                feature_names=self.X.columns,
+                                class_names='ZHENGHOU1',
+                                filled=True, rounded=True,
+                                special_characters=True)
+            graph = pydotplus.graph_from_dot_data(dot_data)
+            # 使用ipython的终端jupyter notebook显示。
+            path = root_path + str(index) + '.txt'
+            index_paths.append(index)
+            f = open(path, 'w') 
+            f.write(dot_data) 
+            f.close()
+            treeCount += 1
+
+        # 保存PDF图片
+        for i in range(treeCount):
+            f_old = open(root_path + str(index_paths[i]) + '.txt','r')
+            f_new = open(root_path + 'new_' + str(index_paths[i]) + '.txt', 'w', encoding='utf-8') 
+            filename = OS_WINDOWS_PATH + '/output/dot/' + 'dot_data_new_' + str(index_paths[i]) + '.txt'
+            to_path =  OS_WINDOWS_PATH + '/output/rf/tree/' +  'dot_data_new_' + str(index_paths[i]) + '.pdf'
+
+            self.font_conf(f_old,f_new, filename, to_path)
 
     def roc(self,regs):
         self.misc.figure()
@@ -388,7 +376,7 @@ if __name__ == "__main__":
     # estimators = [pre.logisiticRegression(), pre.SVM(), pre.decisionTree(), pre.randomForestClassifier(), pre.adaboostClassifier()]
     # pre.fit(regs)
     # pre.predict(regs)
-    pre.predictAverage(regs)
+    # pre.predictAverage(regs)
     
 
     # 交叉验证
@@ -396,14 +384,14 @@ if __name__ == "__main__":
     # PCA和标准化
     # pre.pipline(estimators)
 
-    pre.roc(regs)
+    # pre.roc(regs)
     
     # 决策树可视化
-    # pre.viewTree()
-    # f_old = open(OLD_PATH, 'r') 
-    # f_new = open(NEW_PATH, 'w', encoding='utf-8') 
-    # filename = 'dot_data_new.txt'
-    # pre.font_conf(f_old,f_new, filename, TO_VIEW_PATH)
+    pre.viewTree()
+    f_old = open(OLD_PATH, 'r') 
+    f_new = open(NEW_PATH, 'w', encoding='utf-8') 
+    filename = 'dot_data_new.txt'
+    pre.font_conf(f_old,f_new, NEW_PATH, TO_VIEW_PATH)
 
     # 随机森林可视化
     # pre.test_RF()

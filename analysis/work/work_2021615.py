@@ -5,11 +5,13 @@ import pandas as pd
 import numpy as np
 import sys
 from typing import Counter, Iterable
-sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
+# sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
+
+# sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/analysis/imbalance/')
+sys.path.append(r'E:/liver_disease/liver_disease/analysis/imbalance/')
+sys.path.append(r'E:/liver_disease/liver_disease')
 import constants
 import utils.misc as misc
-sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/analysis/imbalance/')
-# sys.path.append(r'E:/liver_disease/liver_disease')
 import SMOTE, SMOTE_Borderline1, SMOTE_D, SMOTE_Borderline_D
 from imblearn.over_sampling import RandomOverSampler
 

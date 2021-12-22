@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 import sys
-sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
-# sys.path.append(r'E:/liver_disease/liver_disease')
+# sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
+sys.path.append(r'E:/liver_disease/liver_disease')
 import constants
 import utils.misc as misc
 from collections import Counter
@@ -22,7 +22,7 @@ SMOTE_D:            ANALYSIS_SMOTE_D_MERGE_CSV_PATH
 SMOTE_BORDERLINE_D: ANALYSIS_SMOTE_Borderline_D_CSV_PATH
 随机过采样:           ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH
 '''
-PATH = constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH
+PATH = constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH
 
 misc = misc.Misc()
 df = pd.read_csv(PATH)
@@ -41,29 +41,33 @@ print('证的分布情况:',Counter(df['ZHENGHOU1']))
 
 # 调参-网格搜索-决策树
 param_grid = {'criterion':['entropy','gini'],
-             'max_depth':[12,14,18,24],
-             'min_samples_split':[4,6,8,10]}
+             'max_depth':[3,4,5,6,7],
+             'min_samples_split':[2,4,8,10,40,50]
+             }
 
-# 调参-网格搜索-随机森林
-param_grid2 = {
-    'criterion':['entropy','gini'],
-    'max_depth':[16,20,24,30],
-    'n_estimators':[20,30,40,50],
-    'max_features':[0.2,0.4,0.6],
-    'min_samples_split':[2,4,6],
-}
-# 调参-网格搜索-Adaboost
-param_grid3 = {
-    'algorithm':['SAMME','SAMME.R'],
-    'n_estimators':[60,80,100,120],
-    'learning_rate':[0.6,0.8,1],
-}
+# # 调参-网格搜索-随机森林
+# param_grid2 = {
+#     'criterion':['entropy','gini'],
+#     'max_depth':[16,20,24,30],
+#     'n_estimators':[20,30,40,50],
+#     'max_features':[0.2,0.4,0.6],
+#     'min_samples_split':[2,4,6],
+# }
+# # 调参-网格搜索-Adaboost
+# param_grid3 = {
+#     'algorithm':['SAMME','SAMME.R'],
+#     'n_estimators':[60,80,100,120],
+#     'learning_rate':[0.6,0.8,1],
+# }
 
-rfc = RandomForestClassifier()
-# clf = tree.DecisionTreeClassifier() 
+# rfc = RandomForestClassifier()
+clf = tree.DecisionTreeClassifier() 
 # adaboost = AdaBoostClassifier()
 
-clfcv = GridSearchCV(estimator=rfc,param_grid=param_grid2,cv=4,scoring='roc_auc') # ,scoring='roc_auc' 
+# fit = clf.fit(X_train,y_train)
+# test_result = clf.predict(X_test)
+
+clfcv = GridSearchCV(estimator=clf,param_grid=param_grid,cv=4,scoring='roc_auc') # ,scoring='roc_auc' 
 fit = clfcv.fit(X_train,y_train)
 
 test_result = clfcv.predict(X_test)

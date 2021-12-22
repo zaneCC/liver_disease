@@ -35,7 +35,7 @@ CLASS_3 = 3
 # ROOT_PATH_MAC = '/Users/zhouzhan/Documents/codes/python_code'
 OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
 OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
-OS_PATH = OS_MAC_PATH
+OS_PATH = OS_WINDOWS_PATH
 PAPER_VERSION = '论文1.0'
 
 PATH_DIAGNOSIS = OS_PATH + '/data/分型.xlsx'

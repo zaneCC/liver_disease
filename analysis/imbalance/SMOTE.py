@@ -1,8 +1,9 @@
 from sklearn.neighbors import NearestNeighbors
 from base_sampler import *
 import numpy as np
-
-ROOT_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/analysis/imbalance/'
+OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
+OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
+ROOT_PATH = OS_WINDOWS_PATH + '/analysis/imbalance/'
 
 # 使用K-近邻方法产生新样本
 def make_sample(old_feature_data, diff):

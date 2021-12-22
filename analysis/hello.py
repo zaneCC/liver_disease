@@ -1,73 +1,39 @@
-from string import ascii_letters
-import numpy as np
+
+OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
+OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
+
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import sys
-sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
-import constants
-from sklearn.cluster import KMeans,SpectralClustering,MiniBatchKMeans
-from sklearn import datasets
-from sklearn import metrics
+import numpy as np
+from numpy import array
+from numpy import argmax
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
+# # define example
+# # data = ['cold', 'cold', 'warm', 'cold', 'hot', 'hot', 'warm', 'cold', 'warm', 'hot']
+# data = ['warm', 'cold', 'hot', 'hot', 'warm', 'warm', 'hot']
 
+# values = array(data)
+# print(values)
+# # integer encode
+# label_encoder = LabelEncoder()
+# integer_encoded = label_encoder.fit_transform(values)
+# print(integer_encoded)
+# # binary encode
+# onehot_encoder = OneHotEncoder(sparse=False)
+# integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
+# onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
+# print(onehot_encoded)
+# # invert first example
+# # inverted = label_encoder.inverse_transform([argmax(onehot_encoded[0, :])])
 
-# 汇总表-SMOTE过采样后
-# PATH = constants.SMOTE_MERGE_CSV_PATH
-# SMOTE Borderline1 采样
-# PATH = constants.SMOTE_BORDERLINE1_MERGE_CSV_PATH
-# SMOTE_D 采样
-# PATH = constants.SMOTE_D_MERGE_CSV_PATH
-# SMOTE_BORDERLINE_D 采样
-PATH = constants.SMOTE_Borderline_D_CSV_PATH
+# r = [argmax(onehot_encoded[0, :])]
+# print(r)
 
-def shuffle_data(X, y, seed=None):
-    """ Random shuffle of the samples in X and y """
-    if seed:
-        np.random.seed(seed)
-    idx = np.arange(X.shape[0])
-    np.random.shuffle(idx)
-    return X[idx], y[idx]
+PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/入院记录-舌脉象-病历表.xlsx'
+df = pd.read_excel(PATH)
 
-df = pd.read_csv(PATH)
-cols = df.columns.values.tolist()
-cols.remove('ZHENGHOU1')
-X = df[cols] 
-y = df['ZHENGHOU1']
-X,y = shuffle_data(X.to_numpy(),y.to_numpy())
-# print(X)
-# print(y)
+df.drop(['INHOSPTIAL_ID'],axis=1,inplace=True)
 
-# cls = KMeans(n_clusters=2, init='k-means++')
-# y_hat = cls.fit_predict(X)
-# print("Calinski-Harabasz Score", metrics.calinski_harabasz_score(X, y_hat))
-
-# print(y_hat)
-# print(y)
-# count_true = 0
-# for i,j in enumerate(y_hat):
-#     if y_hat[i] == 0 and y[i] == 1:
-#         count_true += 1
-#         continue
-#     if y_hat[i] == 1 and y[i] == 2:
-#         count_true += 1
-#         continue
-
-# print('y: ',len(y), 'count_true: ',count_true)
-
-# for index, k in enumerate((2,3,4,5,6,7,8)):
-#     # plt.subplot(2,2,index+1)
-#     y_pred = MiniBatchKMeans(n_clusters=k, batch_size = 200, random_state=9).fit_predict(X)
-#     score= metrics.calinski_harabasz_score(X, y_pred)  
-#     print('k:',k,',score:',score)
-
-# for index, gamma in enumerate((0.01,0.1,1,10)):
-#     for index, k in enumerate((3,4,5,6)):
-#         y_pred = SpectralClustering(n_clusters=k, gamma=gamma).fit_predict(X)
-#         print("Calinski-Harabasz Score with gamma=", gamma, "n_clusters=", k,"score:", metrics.calinski_harabasz_score(X, y_pred))
-
-
-# X, y = datasets.make_blobs(n_samples=500, n_features=6, centers=5, cluster_std=[0.4, 0.3, 0.4, 0.3, 0.4], random_state=11)
-# from sklearn.cluster import SpectralClustering
-# y_pred = SpectralClustering().fit_predict(X)
-# from sklearn import metrics
-# print("Calinski-Harabasz Score", metrics.calinski_harabasz_score(X, y_pred))
+data1 = pd.get_dummies(df["舌体"])
+# res  = df.join(data1)
+print(data1)
