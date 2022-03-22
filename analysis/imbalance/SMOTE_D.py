@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd
 import math
 
-OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
+OS_MAC_PATH = '/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease'
 OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
-ROOT_PATH = OS_WINDOWS_PATH + '/analysis/imbalance/'
+ROOT_PATH = OS_MAC_PATH + '/analysis/imbalance/'
 
-# 使用K-近邻方法产生新样本
+# smote-d 采样
 def make_sample(old_feature_data, n):
     print('需生成少数类样本个数：',n)
     k = 5 # k 近邻
@@ -99,7 +99,7 @@ def SMOTE_D(imbalanced_data_arr2):
     balanced_data_arr2 = concat_and_shuffle_data(new_minor_data_arr2, major_data_arr2)
     return balanced_data_arr2
 
-def test():
+def _test():
     imbalanced_data = np.load(ROOT_PATH + 'imbalanced_train_data_arr2.npy')
     # print(imbalanced_data.shape)
     minor_data_arr2, major_data_arr2 = seperate_minor_and_major_data(imbalanced_data)
@@ -112,5 +112,5 @@ def test():
     print(balanced_data_arr2.shape)
 
 if __name__ == '__main__':
-    test()
+    _test()
 

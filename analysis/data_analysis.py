@@ -1,12 +1,12 @@
 # 数据分析
-OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
+OS_MAC_PATH = '/Users/hear9000/Documents/codes/python_code/liver_disease/liver_disease/'
 OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
 from numpy.core.defchararray import array
 import pandas as pd
 import numpy as np
 import sys
 from typing import Counter, Iterable
-sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
+sys.path.append(r'/Users/hear9000/Documents/codes/python_code/liver_disease/liver_disease/')
 # sys.path.append(r'E:/liver_disease/liver_disease')
 import constants
 import utils.misc as misc
@@ -14,6 +14,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import accuracy_score,confusion_matrix
+import config
 
 # 分型数值化
 # PATH = constants.PATH_DIAGNOSIS_NORMALIZATION
@@ -22,14 +23,25 @@ from sklearn.metrics import accuracy_score,confusion_matrix
 # 汇总表-特征选择后
 # PATH = constants.SELECTION_MERGE_CSV_PATH
 
-# 汇总表-SMOTE过采样后
-# PATH = constants.SMOTE_MERGE_CSV_PATH
-# SMOTE Borderline1 采样
-PATH = constants.SMOTE_BORDERLINE1_MERGE_CSV_PATH
-# SMOTE_D 采样
-# PATH = constants.SMOTE_D_MERGE_CSV_PATH
-# SMOTE_BORDERLINE_D 采样
-# PATH = constants.SMOTE_Borderline_D_CSV_PATH
+''' 症状-证
+汇总表-未做特征选择:    MERGE_CSV_PATH
+汇总表-特征选择后:     SELECTION_MERGE_CSV_PATH
+人工选择特征:         SYMP_MAIN_ACC_DIAGNOSIS_PATH
+随机过采样:           RANDOM_OVER_SAMPLER_CSV_PATH
+SMOTE:              SMOTE_MERGE_CSV_PATH
+SMOTE Borderline1:  SMOTE_BORDERLINE1_MERGE_CSV_PATH
+SMOTE_D:            SMOTE_D_MERGE_CSV_PATH
+SMOTE_BORDERLINE_D: SMOTE_Borderline_D_CSV_PATH
+'''
+''' 舌象-证
+汇总表-舌象:          MERGE_CSV_DIA_TONGUE_PATH
+随机过采样:           TUE_RANDOM_OVER_SAMPLER_CSV_PATH
+SMOTE:              TUE_SMOTE_MERGE_CSV_PATH
+SMOTE Borderline1:  TUE_SMOTE_BORDERLINE1_MERGE_CSV_PATH
+SMOTE_D:            TUE_SMOTE_D_MERGE_CSV_PATH
+SMOTE_BORDERLINE_D: TUE_SMOTE_Borderline_D_CSV_PATH
+'''
+PATH = constants.MERGE_CSV_DIA_TONGUE_PATH
 
 class DataAnalysis():
 
@@ -38,8 +50,10 @@ class DataAnalysis():
         self.df = pd.read_csv(PATH)
         # self.df = pd.read_excel(PATH)
         # 设置字体
-        mpl.rcParams['font.sans-serif'] = [u'simHei']
-        mpl.rcParams['axes.unicode_minus'] = False
+        # mpl.rcParams['font.sans-serif'] = [u'simHei']
+        # mpl.rcParams['axes.unicode_minus'] = False
+
+        plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 
         self.misc = misc.Misc()
         r = self.df['ZHENGHOU1'].value_counts()
@@ -71,31 +85,45 @@ class DataAnalysis():
 
             # 统计症状频次
             dicSym[index] = {constants.CLASS_1:count_1/self.count_1,constants.CLASS_2:count_2/self.count_2}
-            
-            # dicTop40[index] = Counter(self.df[index])[1]
-        
-        # sortDic = sorted(dicTop40.items(), key=lambda e:e[1], reverse=True)
-        # print(sortDic[:40])
-        self.top40= ['尿黄','身目黄染','恶心','厌油','腹胀','乏力','纳差','精神差','夜寐差','口干','呕吐','腹痛','口苦','大便稀溏',
-                '发热','易疲劳','黑便','腹泻','双下肢水肿','头晕','大便时干时稀','呕血','肝区疼痛','皮肤瘙痒','咳嗽','大便干',
-                '尿少','欲呕','水样便','神志欠清','鼻塞','肛门坠胀感','大便次数增多','咳痰','全身胀痛','计算力下降','大便偏干',
-                '排便不爽','肝功能受损','陶土样大便']
 
+        dic = dict(self.df.sum())
+        # del dic['INHOSPTIAL_ID']
+        del dic['ZHENGHOU1']
+        r_dic = sorted(dic.items(), reverse=True, key=lambda kv: (kv[1], kv[0]))
+        print(r_dic)
+            # dicTop40[index] = Counter[self.df[index]][1]
+
+        sortDic = sorted(dicTop40.items(), key=lambda e:e[1], reverse=True)
+        print(sortDic[:40])
+
+        if config.IS_SHE:
+
+            # 所有舌脉象特征
+            self.top40 = ['脉象_弦','舌体_正常','尿黄','身目黄染','脉络_正常','舌质_红','恶心','厌油','腹胀','乏力',
+                          '纳差','舌苔_腻','舌质_淡红','舌苔_白','舌苔_黄','脉络_增粗','脉络_迂曲','舌质_红绛','精神差',
+                          '脉象_滑','舌体_胖大','夜寐差','脉象_细','呕吐','舌苔_厚','口干',
+                          '腹痛','脉象_数','舌质_暗','舌苔_薄','舌体_齿痕','舌质_淡白','舌质_暗紫','口苦','脉络_瘀斑',
+                          '易疲劳','发热','舌苔_少','大便稀溏','黑便']
+        else:
+            self.top40= ['尿黄','身目黄染','恶心','厌油','腹胀','乏力','纳差','精神差','夜寐差','口干','呕吐','腹痛','口苦','大便稀溏',
+                    '发热','易疲劳','黑便','腹泻','双下肢水肿','头晕','大便时干时稀','呕血','肝区疼痛','皮肤瘙痒','咳嗽','大便干',
+                    '尿少','欲呕','水样便','神志欠清','鼻塞','肛门坠胀感','大便次数增多','咳痰','全身胀痛','计算力下降','大便偏干'
+                    ,'排便不爽','肝功能受损','陶土样大便'
+                        ]
+            print(self.top40)
+        print(dicSym)
         return dicSym
 
     def showCountSym(self,df=None):
         if df is None:
             df = self.df
         dicSym = self.countSym(df)
-        size = 5
-        x = np.arange(size)
-        
+
         plt.ylim((0, 1))
-        
 
         total_width, n = 0.8, 2
         width = total_width / n
-        x = x - (total_width - width) / 2
+        # x = x - (total_width - width) / 2
         loc = 0
         for i in range(8):
             values = self.top40[loc:loc+5]
@@ -103,17 +131,19 @@ class DataAnalysis():
             for val in values:
                 a.append(dicSym[val][1])
                 b.append(dicSym[val][2])
-            
+
+            size = len(values)
+            x = np.arange(size)
             plt.subplot(2,4,i+1)
 
-            plt.bar(x, a,  width=width, label='a')
-            plt.bar(x + width, b, width=width, label='b')
+            plt.bar(x, np.array(a),  width=width, label='a')
+            plt.bar(x + width, np.array(b), width=width, label='b')
             plt.xticks(range(size),self.top40[loc:loc+5])
             plt.yticks([0,0.2,0.4,0.6,0.8,1])
             plt.xticks(rotation=90)
             plt.tight_layout()   #xlable坐标轴显示不全
             loc += 5
-        
+
         plt.show()
     
 

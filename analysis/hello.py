@@ -1,39 +1,69 @@
-
-OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
-OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
-
-import pandas as pd
 import numpy as np
-from numpy import array
-from numpy import argmax
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import OneHotEncoder
-# # define example
-# # data = ['cold', 'cold', 'warm', 'cold', 'hot', 'hot', 'warm', 'cold', 'warm', 'hot']
-# data = ['warm', 'cold', 'hot', 'hot', 'warm', 'warm', 'hot']
+import optuna
 
-# values = array(data)
-# print(values)
-# # integer encode
-# label_encoder = LabelEncoder()
-# integer_encoded = label_encoder.fit_transform(values)
-# print(integer_encoded)
-# # binary encode
-# onehot_encoder = OneHotEncoder(sparse=False)
-# integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
-# onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
-# print(onehot_encoded)
-# # invert first example
-# # inverted = label_encoder.inverse_transform([argmax(onehot_encoded[0, :])])
+import sklearn.datasets
+import sklearn.metrics
+from sklearn.model_selection import train_test_split
+import xgboost as xgb
 
-# r = [argmax(onehot_encoded[0, :])]
-# print(r)
 
-PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/入院记录-舌脉象-病历表.xlsx'
-df = pd.read_excel(PATH)
+def objective(trial):
+    (data, target) = sklearn.datasets.load_breast_cancer(return_X_y=True)
+    train_x, valid_x, train_y, valid_y = train_test_split(data, target, test_size=0.25)
+    # dtrain = xgb.DMatrix(train_x, label=train_y)
+    # dvalid = xgb.DMatrix(valid_x, label=valid_y)
 
-df.drop(['INHOSPTIAL_ID'],axis=1,inplace=True)
+    param = {
+        "verbosity": 0,
+        "objective": "binary:logistic",
+        # use exact for small dataset.
+        "tree_method": "exact",
+        # defines booster, gblinear for linear functions.
+        "booster": trial.suggest_categorical("booster", ["gbtree", "gblinear", "dart"]),
+        # L2 regularization weight.
+        "lambda": trial.suggest_float("lambda", 1e-8, 1.0, log=True),
+        # L1 regularization weight.
+        "alpha": trial.suggest_float("alpha", 1e-8, 1.0, log=True),
+        # sampling ratio for training data.
+        "subsample": trial.suggest_float("subsample", 0.2, 1.0),
+        # sampling according to each tree.
+        "colsample_bytree": trial.suggest_float("colsample_bytree", 0.2, 1.0),
+    }
 
-data1 = pd.get_dummies(df["舌体"])
-# res  = df.join(data1)
-print(data1)
+    if param["booster"] in ["gbtree", "dart"]:
+        # maximum depth of the tree, signifies complexity of the tree.
+        param["max_depth"] = trial.suggest_int("max_depth", 3, 9, step=2)
+        # minimum child weight, larger the term more conservative the tree.
+        param["min_child_weight"] = trial.suggest_int("min_child_weight", 2, 10)
+        param["eta"] = trial.suggest_float("eta", 1e-8, 1.0, log=True)
+        # defines how selective algorithm is.
+        param["gamma"] = trial.suggest_float("gamma", 1e-8, 1.0, log=True)
+        param["grow_policy"] = trial.suggest_categorical("grow_policy", ["depthwise", "lossguide"])
+
+    if param["booster"] == "dart":
+        param["sample_type"] = trial.suggest_categorical("sample_type", ["uniform", "weighted"])
+        param["normalize_type"] = trial.suggest_categorical("normalize_type", ["tree", "forest"])
+        param["rate_drop"] = trial.suggest_float("rate_drop", 1e-8, 1.0, log=True)
+        param["skip_drop"] = trial.suggest_float("skip_drop", 1e-8, 1.0, log=True)
+
+    # bst = xgb.train(param, dtrain)
+    bst = xgb.XGBClassifier(**param,use_label_encoder=False)
+    bst.fit(train_x,train_y)
+    preds = bst.predict(valid_x)
+    pred_labels = np.rint(preds)
+    accuracy = sklearn.metrics.accuracy_score(valid_y, pred_labels)
+    return accuracy
+
+
+if __name__ == "__main__":
+    study = optuna.create_study(direction="maximize")
+    study.optimize(objective, n_trials=100, timeout=600)
+
+    print("Number of finished trials: ", len(study.trials))
+    print("Best trial:")
+    trial = study.best_trial
+
+    print("  Value: {}".format(trial.value))
+    print("  Params: ")
+    for key, value in trial.params.items():
+        print("    {}: {}".format(key, value))

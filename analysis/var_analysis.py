@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 import sys
-sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
+sys.path.append(r'/Users/hear9000/Documents/codes/python_code/liver_disease/liver_disease/')
 # sys.path.append(r'E:/liver_disease/liver_disease')
-import constants
+import constants,config
+import analysis.models.mlearn_models as models
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -13,7 +14,7 @@ import matplotlib as mpl
 import os
 import matplotlib.ticker as ticker
 
-'''
+''' 症状-证
 汇总表-未做特征选择:    MERGE_CSV_PATH
 汇总表-特征选择后:     SELECTION_MERGE_CSV_PATH
 人工选择特征:         SYMP_MAIN_ACC_DIAGNOSIS_PATH
@@ -24,14 +25,25 @@ SMOTE_D:            ANALYSIS_SMOTE_D_MERGE_CSV_PATH
 SMOTE_BORDERLINE_D: ANALYSIS_SMOTE_Borderline_D_CSV_PATH
 随机过采样:           ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH
 '''
-PATH = constants.ANALYSIS_SMOTE_MERGE_CSV_PATH
+''' 舌象-证
+汇总表-舌象:          MERGE_CSV_DIA_TONGUE_PATH
+随机过采样:           TUE_RANDOM_OVER_SAMPLER_CSV_PATH
+SMOTE:              TUE_SMOTE_MERGE_CSV_PATH
+SMOTE Borderline1:  TUE_SMOTE_BORDERLINE1_MERGE_CSV_PATH
+SMOTE_D:            TUE_SMOTE_D_MERGE_CSV_PATH
+SMOTE_BORDERLINE_D: TUE_SMOTE_Borderline_D_CSV_PATH
+'''
+PATH = constants.TUE_SMOTE_MERGE_CSV_PATH
+
 
 class VarAnalysis():
 
     def __init__(self):
         # 设置字体
-        mpl.rcParams['font.sans-serif'] = [u'simHei']
-        mpl.rcParams['axes.unicode_minus'] = False
+        # mpl.rcParams['font.sans-serif'] = [u'simHei']
+        # mpl.rcParams['axes.unicode_minus'] = False
+
+        plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
         # 读数据
         self.read_data()
         
@@ -55,21 +67,22 @@ class VarAnalysis():
         # SMOTE_BORDERLINE_D-最优参数：{'criterion': 'gini', 'max_depth': 18, 'min_samples_split': 10}  AUC:0.82
 
         # 根据样本配置最优参数
-        if self.path == constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH: # 随机过采样
-            criterion = 'gini';max_depth = 15;min_samples_split = 2
-        elif self.path == constants.ANALYSIS_SMOTE_MERGE_CSV_PATH:      # SMOTE
-            criterion = 'entropy';max_depth = 14;min_samples_split = 6
-        elif self.path == constants.ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH:  # SMOTE_Borderline1
-            criterion = 'entropy';max_depth = 20;min_samples_split = 6
-        elif self.path == constants.ANALYSIS_SMOTE_D_MERGE_CSV_PATH:  # SMOTE_D
-            criterion = 'gini';max_depth = 18;min_samples_split = 10
-        elif self.path == constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH:  # SMOTE_BORDERLINE_D
-            criterion = 'gini';max_depth = 18;min_samples_split = 10
+        # if self.path == constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH: # 随机过采样
+        #     criterion = 'gini';max_depth = 15;min_samples_split = 2
+        # elif self.path == constants.ANALYSIS_SMOTE_MERGE_CSV_PATH:      # SMOTE
+        #     criterion = 'entropy';max_depth = 14;min_samples_split = 6
+        # elif self.path == constants.ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH:  # SMOTE_Borderline1
+        #     criterion = 'entropy';max_depth = 20;min_samples_split = 6
+        # elif self.path == constants.ANALYSIS_SMOTE_D_MERGE_CSV_PATH:  # SMOTE_D
+        #     criterion = 'gini';max_depth = 18;min_samples_split = 10
+        # elif self.path == constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH:  # SMOTE_BORDERLINE_D
+        #     criterion = 'gini';max_depth = 18;min_samples_split = 10
 
         importances = np.zeros(len(self.X_test.columns))
         s = 0
         for i in range(k):
-            clf = DecisionTreeClassifier(criterion=criterion,max_depth=max_depth,min_samples_split=min_samples_split)
+            # clf = DecisionTreeClassifier(criterion=criterion,max_depth=max_depth,min_samples_split=min_samples_split)
+            clf = models.decisionTree()
             clf.fit(self.X_train,self.y_train)
             test_result = clf.predict(self.X_test)
             importances += clf.feature_importances_
@@ -97,21 +110,22 @@ class VarAnalysis():
         # SMOTE_BORDERLINE_D-最优参数:{'criterion': 'entropy', 'max_depth': 14, 'max_features': 0.6, 'min_samples_split': 2, 'n_estimators': 20}   AUC:0.85
 
         # 根据样本配置最优参数
-        if self.path == constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH: # 随机过采样
-            criterion = 'entropy';max_depth = 20;max_features=0.2;min_samples_split = 2;n_estimators=40
-        elif self.path == constants.ANALYSIS_SMOTE_MERGE_CSV_PATH:      # SMOTE
-            criterion = 'entropy';max_depth = 12;max_features=0.4;min_samples_split = 4;n_estimators=16
-        elif self.path == constants.ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH:  # SMOTE_Borderline1
-            criterion = 'gini';max_depth = 13;max_features=0.2;min_samples_split = 2;n_estimators=14
-        elif self.path == constants.ANALYSIS_SMOTE_D_MERGE_CSV_PATH:  # SMOTE_D
-            criterion = 'gini';max_depth = 13;max_features=0.2;min_samples_split = 2;n_estimators=12
-        elif self.path == constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH:  # SMOTE_BORDERLINE_D
-            criterion = 'entropy';max_depth = 14;max_features=0.6;min_samples_split = 2;n_estimators=20
+        # if self.path == constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH: # 随机过采样
+        #     criterion = 'entropy';max_depth = 20;max_features=0.2;min_samples_split = 2;n_estimators=40
+        # elif self.path == constants.ANALYSIS_SMOTE_MERGE_CSV_PATH:      # SMOTE
+        #     criterion = 'entropy';max_depth = 12;max_features=0.4;min_samples_split = 4;n_estimators=16
+        # elif self.path == constants.ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH:  # SMOTE_Borderline1
+        #     criterion = 'gini';max_depth = 13;max_features=0.2;min_samples_split = 2;n_estimators=14
+        # elif self.path == constants.ANALYSIS_SMOTE_D_MERGE_CSV_PATH:  # SMOTE_D
+        #     criterion = 'gini';max_depth = 13;max_features=0.2;min_samples_split = 2;n_estimators=12
+        # elif self.path == constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH:  # SMOTE_BORDERLINE_D
+        #     criterion = 'entropy';max_depth = 14;max_features=0.6;min_samples_split = 2;n_estimators=20
 
         importances = np.zeros(len(self.X_test.columns))
 
         for i in range(k):
-            rfc = RandomForestClassifier(criterion='entropy',max_depth=7,max_features=0.6,min_samples_split=8,n_estimators=20)
+            # rfc = RandomForestClassifier(criterion='entropy',max_depth=7,max_features=0.6,min_samples_split=8,n_estimators=20)
+            rfc = models.randomForestClassifier()
             rfc.fit(self.X_train,self.y_train)
             # test_result = rfc.predict(self.X_test)
             importances += rfc.feature_importances_
@@ -136,27 +150,32 @@ class VarAnalysis():
             title = '决策树-' + title
         elif type == 1:
             title = '随机森林-' + title
-        os_path = constants.OS_PATH + '/output/特征贡献度'
-        if self.path == constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH: # 随机过采样
+
+        if config.IS_SHE:
+            os_path = constants.OS_PATH + '/output/特征贡献度/舌象'
+        else:
+            os_path = constants.OS_PATH + '/output/特征贡献度'
+
+        if self.path == constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH or self.path == constants.TUE_ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH: # 随机过采样
             p_path = os_path + '/随机过采样/'+ title + '.png'
             t_path = os_path + '/随机过采样/'+ title + '.txt'
-        elif self.path == constants.ANALYSIS_SMOTE_MERGE_CSV_PATH: # SMOTE
+        elif self.path == constants.ANALYSIS_SMOTE_MERGE_CSV_PATH or self.path == constants.TUE_ANALYSIS_SMOTE_MERGE_CSV_PATH: # SMOTE
             p_path = os_path + '/SMOTE/'+ title +'.png'
             t_path = os_path + '/SMOTE/'+ title + '.txt'
-        elif self.path == constants.ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH: # SMOTE Borderline1
+        elif self.path == constants.ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH or self.path == constants.TUE_ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH: # SMOTE Borderline1
             p_path = os_path + '/SMOTE_BORDERLINE/'+ title +'.png'
             t_path = os_path + '/SMOTE_BORDERLINE/'+ title + '.txt'
-        elif self.path == constants.ANALYSIS_SMOTE_D_MERGE_CSV_PATH: # SMOTE_D
+        elif self.path == constants.ANALYSIS_SMOTE_D_MERGE_CSV_PATH or self.path == constants.TUE_ANALYSIS_SMOTE_D_MERGE_CSV_PATH: # SMOTE_D
             p_path = os_path + '/SMOTE_D/'+ title +'.png'
             t_path = os_path + '/SMOTE_D/'+ title + '.txt'
-        elif self.path == constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH: # SMOTE_BORDERLINE_D
+        elif self.path == constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH or self.path == constants.TUE_ANALYSIS_SMOTE_Borderline_D_CSV_PATH: # SMOTE_BORDERLINE_D
             p_path = os_path + '/SMOTE_BORDERLINE_D/'+ title +'.png'
             t_path = os_path + '/SMOTE_BORDERLINE_D/'+ title + '.txt'
         return p_path, t_path
 
     def show_important_var(self,top_features,importances,top_indices,features, key, type,title='特征贡献度'):
         # plt.figure()
-        ax = plt.subplot(2,3,key+1)
+        ax = plt.subplot(2,2,key+1)
         ax.set_title(title)
 
         # plt.title(title)
@@ -239,13 +258,22 @@ if __name__ == '__main__':
     
     # 决策树    随机森林
     value = '随机森林'
-    regs = [
-            ('随机过采样',constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH),
-            ('SMOTE',constants.ANALYSIS_SMOTE_MERGE_CSV_PATH),
-            ('SMOTE_Borderline',constants.ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH),
-            ('SMOTE_D',constants.ANALYSIS_SMOTE_D_MERGE_CSV_PATH),
-            ('SMOTE_BORDERLINE_D',constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH),
-            ]
+    if config.IS_SHE:
+        regs = [
+            ('随机过采样', constants.TUE_ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH),
+            ('SMOTE', constants.TUE_ANALYSIS_SMOTE_MERGE_CSV_PATH),
+            ('SMOTE_Borderline', constants.TUE_ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH),
+            ('SMOTE_D', constants.TUE_ANALYSIS_SMOTE_D_MERGE_CSV_PATH)
+            # ('SMOTE_BORDERLINE_D', constants.TUE_ANALYSIS_SMOTE_Borderline_D_CSV_PATH),
+        ]
+    else:
+        regs = [
+                ('随机过采样',constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH),
+                ('SMOTE',constants.ANALYSIS_SMOTE_MERGE_CSV_PATH),
+                ('SMOTE_Borderline',constants.ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH),
+                ('SMOTE_D',constants.ANALYSIS_SMOTE_D_MERGE_CSV_PATH)
+                # ('SMOTE_BORDERLINE_D',constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH),
+                ]
 
     # for key,(name, path) in enumerate(regs):
     #     va.read_data(path)
@@ -257,7 +285,7 @@ if __name__ == '__main__':
     #     elif value == '随机森林':
     #         top_features, importances, top_indices, features = va.get_RFC_important_var()
     #         va.show_important_var(top_features, importances, top_indices, features, key, type=1,title=name)
-
+    #
     # va.show()
 
     # 获得所有样本重要特征

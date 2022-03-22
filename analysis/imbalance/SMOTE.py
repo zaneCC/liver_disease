@@ -1,9 +1,11 @@
 from sklearn.neighbors import NearestNeighbors
+import sys
+sys.path.append(r'/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease/analysis/imbalance/')
 from base_sampler import *
 import numpy as np
-OS_MAC_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease'
+OS_MAC_PATH = '/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease'
 OS_WINDOWS_PATH = 'E:/liver_disease/liver_disease'
-ROOT_PATH = OS_WINDOWS_PATH + '/analysis/imbalance/'
+ROOT_PATH = OS_MAC_PATH + '/analysis/imbalance/'
 
 # 使用K-近邻方法产生新样本
 def make_sample(old_feature_data, diff):
@@ -49,7 +51,7 @@ def SMOTE(imbalanced_data_arr2):
     balanced_data_arr2 = concat_and_shuffle_data(new_minor_data_arr2, major_data_arr2)
     return balanced_data_arr2
 
-def test():
+def _test():
     imbalanced_data = np.load(ROOT_PATH + 'imbalanced_train_data_arr2.npy')
     # print(imbalanced_data.shape)
     minor_data_arr2, major_data_arr2 = seperate_minor_and_major_data(imbalanced_data)
@@ -62,4 +64,4 @@ def test():
 
 # 测试
 if __name__ == '__main__':
-    test()
+    _test()

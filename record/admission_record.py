@@ -1,48 +1,48 @@
-# 入院-舌脉象
+# 入院_舌脉象
 import pandas as pd
 import numpy as np
 import re
 import sys
-sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/')
+sys.path.append(r'/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease/')
 import constants
 import utils.re_utils as re_utils
-sys.path.append(r'/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/normalization')
-import tongue_record_normalization as trn
+sys.path.append(r'/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease/normalization')
+from normalization import tongue_record_normalization as trn
 
-PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/data/入院记录——舌脉.csv'
-TO_PATH = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-病历表.csv'
-TO_PATH_1 = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-舌体-病历表.csv'
-TO_PATH_2 = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-舌下脉络-病历表.csv'
-TO_PATH_3 = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-舌质-病历表.csv'
-TO_PATH_4 = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-舌苔-病历表.csv'
-TO_PATH_5 = '/Users/zhouzhan/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-脉象-病历表.csv'
+PATH = '/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease/data/入院记录——舌脉.csv'
+TO_PATH = '/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-病历表.csv'
+TO_PATH_1 = '/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-舌体-病历表.csv'
+TO_PATH_2 = '/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-舌下脉络-病历表.csv'
+TO_PATH_3 = '/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-舌质-病历表.csv'
+TO_PATH_4 = '/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-舌苔-病历表.csv'
+TO_PATH_5 = '/Users/haer9000/Documents/codes/python_code/liver_disease/liver_disease/output/舌象/入院记录-舌脉象-脉象-病历表.csv'
 
 INCASE_DICT = ['中医四诊舌体情况', '中医四诊舌下脉络情况','中医四诊舌质情况','中医四诊舌苔情况','中医四诊脉象情况']
 TONGUE_VEINS = ['舌体','舌下脉络','舌质','舌苔','脉象']
 # 分类前要清洗数据（把所有逗号/句号去掉），不在分类中的用0表示 胖大，边有齿痕
 # 舌体种类
-KIND_TONGUE_POSTURE = { '舌体-胖大齿痕':'胖大边有齿痕|胖大，边有齿痕','舌体-正常':'正常|正常正常', '舌体-瘦':'瘦', '舌体-胖大':'胖大', '舌体-齿痕':'边有齿痕|正常边有齿痕'}
-# 舌质种类-舌色5种：淡红，淡白，红，绛，青紫
-KIND_TONGUE_COLOR = { '舌质-暗紫红':'暗紫红','舌质-淡红':'淡红|淡红嫩|稍红', '舌质-红绛':'暗红|红暗|红绛|淡暗红',  '舌质-暗紫':'暗紫|红暗紫',
-                     '舌质-红':'红|红嫩','舌质-暗':'暗|淡暗|暗淡','舌质-淡白':'淡白|淡'} 
+KIND_TONGUE_POSTURE = { '舌体_胖大齿痕':'胖大边有齿痕|胖大，边有齿痕','舌体_正常':'正常|正常正常', '舌体_瘦':'瘦', '舌体_胖大':'胖大', '舌体_齿痕':'边有齿痕|正常边有齿痕'}
+# 舌质种类_舌色5种：淡红，淡白，红，绛，青紫
+KIND_TONGUE_COLOR = { '舌质_暗紫红':'暗紫红','舌质_淡红':'淡红|淡红嫩|稍红', '舌质_红绛':'暗红|红暗|红绛|淡暗红',  '舌质_暗紫':'暗紫|红暗紫',
+                     '舌质_红':'红|红嫩','舌质_暗':'暗|淡暗|暗淡','舌质_淡白':'淡白|淡'} 
 # 脉象种类:弦、滑、细、数、弱、沉。。。（可拆分）
-KIND_TONGUE_PULSE = {'脉象-细沉数弦':'细沉数弦','脉象-细数弦':'细数弦',
-                    '脉象-弦滑':'弦滑|滑弦', '脉象-弦数':'弦数', '脉象-弦细':'弦细', '脉象-细弱':'细弱', 
-                    '脉象-沉细':'沉细', '脉象-实弦':'实弦', '脉象-弦弱':'弦弱','脉象-弦缓':'弦缓',
-                    '脉象-细':'细','脉象-弦':'弦|弦弦', '脉象-濡':'濡',  '脉象-实':'实', '脉象-滑':'滑'} 
+KIND_TONGUE_PULSE = {'脉象_细沉数弦':'细沉数弦','脉象_细数弦':'细数弦',
+                    '脉象_弦滑':'弦滑|滑弦', '脉象_弦数':'弦数', '脉象_弦细':'弦细', '脉象_细弱':'细弱', 
+                    '脉象_沉细':'沉细', '脉象_实弦':'实弦', '脉象_弦弱':'弦弱','脉象_弦缓':'弦缓',
+                    '脉象_细':'细','脉象_弦':'弦|弦弦', '脉象_濡':'濡',  '脉象_实':'实', '脉象_滑':'滑'} 
 # 舌苔种类:1,质（薄，厚，润，燥，腻，腐，剥，偏，全，真，假）;2,色（白，黄，灰黑）。。（可拆分）
-KIND_TONGUE_FUR = {'舌苔-厚腻腐黄白':'厚腻腐黄白','舌苔-白腻中间有裂痕':'白腻中间有裂痕', '舌苔-湿润白腻厚':'湿润白厚腻',
-                    '舌苔-薄黄厚腻':'薄黄厚腻', '舌苔-白灰黑腻':'白灰黑腻', '舌苔-干燥灰黑腻黄':'干燥灰黑腻黄','舌苔-湿润黄少':'湿润黄少', 
-                    '舌苔-白湿润腻':'白湿润腻', '舌苔-厚腻湿润':'厚腻湿润', '舌苔-黄干燥少':'黄干燥少', '舌苔-湿润黄腻':'湿润黄腻',
-                    '舌苔-腻湿润':'腻湿润', '舌苔-白黄腻':'白黄腻|白腻黄', '舌苔-腐黄腻':'腐黄腻',
-                    '舌苔-薄黄腻':'薄黄腻|腻薄黄', '舌苔-黄腻少':'黄腻少', '舌苔-黄厚腻':'腻厚黄|黄腻厚|厚腻黄|黄厚腻.', 
-                    '舌苔-少薄黄':'少薄黄', '舌苔-黄干燥':'黄干燥','舌苔-腻白少':'白腻少', '舌苔-腻白厚':'白腻厚|白厚腻',
-                    '舌苔-腻白':'白腻|腻白|白微腻', '舌苔-腻黄':'黄腻|腻黄|腻略黄',
-                    '舌苔-薄白':'薄白', '舌苔-白少':'少白','舌苔-白厚':'白厚','舌苔-黄少':'黄少','舌苔-黄厚':'黄厚', '舌苔-腻少':'少腻','舌苔-湿润':'湿润',
-                    '舌苔-白':'白','舌苔-黄':'黄','舌苔-少':'少','舌苔-腻':'腻'} 
+KIND_TONGUE_FUR = {'舌苔_厚腻腐黄白':'厚腻腐黄白','舌苔_白腻中间有裂痕':'白腻中间有裂痕', '舌苔_湿润白腻厚':'湿润白厚腻',
+                    '舌苔_薄黄厚腻':'薄黄厚腻', '舌苔_白灰黑腻':'白灰黑腻', '舌苔_干燥灰黑腻黄':'干燥灰黑腻黄','舌苔_湿润黄少':'湿润黄少', 
+                    '舌苔_白湿润腻':'白湿润腻', '舌苔_厚腻湿润':'厚腻湿润', '舌苔_黄干燥少':'黄干燥少', '舌苔_湿润黄腻':'湿润黄腻',
+                    '舌苔_腻湿润':'腻湿润', '舌苔_白黄腻':'白黄腻|白腻黄', '舌苔_腐黄腻':'腐黄腻',
+                    '舌苔_薄黄腻':'薄黄腻|腻薄黄', '舌苔_黄腻少':'黄腻少', '舌苔_黄厚腻':'腻厚黄|黄腻厚|厚腻黄|黄厚腻.', 
+                    '舌苔_少薄黄':'少薄黄', '舌苔_黄干燥':'黄干燥','舌苔_腻白少':'白腻少', '舌苔_腻白厚':'白腻厚|白厚腻',
+                    '舌苔_腻白':'白腻|腻白|白微腻', '舌苔_腻黄':'黄腻|腻黄|腻略黄',
+                    '舌苔_薄白':'薄白', '舌苔_白少':'少白','舌苔_白厚':'白厚','舌苔_黄少':'黄少','舌苔_黄厚':'黄厚', '舌苔_腻少':'少腻','舌苔_湿润':'湿润',
+                    '舌苔_白':'白','舌苔_黄':'黄','舌苔_少':'少','舌苔_腻':'腻'} 
 # 舌下脉络种类（可拆分）
-KIND_SUBLINGUAL_VEIN = {'脉络-正常':'脉络正常|舌下脉络正常', '脉络-瘀点迂曲':'瘀点脉络迂曲','脉络-迂曲':'脉络迂曲', '脉络-瘀斑':'瘀斑或瘀条|瘀点',
-                     '脉络-增粗':'脉络增粗|舌下脉络增粗延长|脉络增粗延长'} 
+KIND_SUBLINGUAL_VEIN = {'脉络_正常':'脉络正常|舌下脉络正常', '脉络_瘀点迂曲':'瘀点脉络迂曲','脉络_迂曲':'脉络迂曲', '脉络_瘀斑':'瘀斑或瘀条|瘀点',
+                     '脉络_增粗':'脉络增粗|舌下脉络增粗延长|脉络增粗延长'} 
 
 NOT_TONGUE_VEINS_DICT = {'{.'}
 
@@ -107,6 +107,7 @@ for row in df.itertuples():
 # # 舌质
 # data3 = pd.get_dummies(resultDF["舌质"])
 # data3.drop([0],axis=1,inplace=True)
+# data3 = trn.combineSHE_ZHI(data3)
 # data3.to_csv(TO_PATH_3)
 # # 舌苔
 # data4 = pd.get_dummies(resultDF["舌苔"])

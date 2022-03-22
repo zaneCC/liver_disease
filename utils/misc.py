@@ -9,8 +9,9 @@ class Misc():
 
     def __init__(self):
         # 设置字体
-        mpl.rcParams['font.sans-serif'] = [u'simHei']
-        mpl.rcParams['axes.unicode_minus'] = False
+        # mpl.rcParams['font.sans-serif'] = [u'simHei']
+        # mpl.rcParams['axes.unicode_minus'] = False
+        plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
         
 
     def plotAccuLine(self,accuracies,color='r',dlabel=None):
