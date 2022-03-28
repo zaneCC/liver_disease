@@ -2,6 +2,7 @@ import constants
 
 
 IS_SHE = True
+
 ''' 症状-证
 汇总表-未做特征选择:    MERGE_CSV_PATH
 汇总表-特征选择后:     SELECTION_MERGE_CSV_PATH
@@ -20,7 +21,7 @@ SMOTE Borderline1:  TUE_SMOTE_BORDERLINE1_MERGE_CSV_PATH
 SMOTE_D:            TUE_SMOTE_D_MERGE_CSV_PATH
 # SMOTE_BORDERLINE_D: TUE_SMOTE_Borderline_D_CSV_PATH
 '''
-PATH = constants.TUE_SMOTE_D_MERGE_CSV_PATH
+PATH = constants.TUE_SMOTE_MERGE_CSV_PATH
 
 def config_path_compare_test(j):
     # RANDOM_OVER_SAMPLER_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + '实验' + '/对比实验/' + str(

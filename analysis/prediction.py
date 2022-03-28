@@ -38,6 +38,9 @@ class Prediction():
         self.X = df[cols] 
         self.y = df['ZHENGHOU1']
 
+        _x = self.X.to_numpy()
+        self.y = data_utils.unify_lable(self.y)
+
         self.split()
 
     def __init__(self):
@@ -48,9 +51,11 @@ class Prediction():
     def split(self):
         # TODO 使用 StratifiedKFold 拆分数据
         X_train,X_test,y_train,y_test = train_test_split(self.X,self.y,test_size = 0.2,random_state=0)
-        ss = StandardScaler()
-        self.X_train = ss.fit_transform(X_train)
-        self.X_test = ss.transform(X_test)
+        # ss = StandardScaler()
+        # self.X_train = ss.fit_transform(X_train)
+        # self.X_test = ss.transform(X_test)
+        self.X_train = X_train
+        self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
 
@@ -68,9 +73,10 @@ class Prediction():
         for key, (name, i) in enumerate(regs):
             # 获得 10 次平均结果：精度、准确度、召回率、f1值
             aver_f1, aver_precision, var_precision_0, var_precision_1, var_f1_0, var_f1_1 = [], [], [], [], [], []
+            aver_acc = []
             aver_recall,var_recall_0,var_recall_1 = [],[],[]
             # 方差
-            std_f1, std_precision = [],[]
+            std_f1, std_precision,std_recall = [],[],[]
 
             for train_index, test_index in sfolder.split(_x, _y):
                 X_train, X_test = _x[train_index], _x[test_index]
@@ -78,6 +84,10 @@ class Prediction():
 
                 i.fit(X_train, y_train)
                 pre = i.predict(X_test)
+
+                # 准确度
+                acc = accuracy_score(y_test, pre)
+                aver_acc.append(acc)
 
                 # 精度
                 precision = precision_score(y_test, pre, average=None)
@@ -100,13 +110,16 @@ class Prediction():
             aver_recall.append(np.mean(var_recall_1))
             std_f1.append(np.std(var_f1_0))
             std_f1.append(np.std(var_f1_1))
+            std_recall.append(np.std(var_recall_0))
+            std_recall.append(np.std(var_recall_1))
             std_precision.append(np.std(var_precision_0))
             std_precision.append(np.std(var_precision_1))
 
             print('模型:', name)
+            print('准确度：',np.mean(aver_acc),', std：',np.std(aver_acc))
             print('平均精度：', aver_precision, ', std：', std_precision)
             print('平均 f1：', aver_f1, ', std：', std_f1)
-            print('平均召回率：', aver_recall)
+            print('平均召回率：', aver_recall,', std：',std_recall)
 
 
             # TODO 保存结果
@@ -118,8 +131,6 @@ class Prediction():
     def predictAverage(self,regs, k=6): # 6次采样，10次交叉验证
         # 先在work_2021615 中执行 resampling，生成样本
         sfolder = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
-        _x = self.X.to_numpy()
-        _y = data_utils.unify_lable(self.y)
 
         for key, (name, i) in enumerate(regs):
             # 获得 10 次平均结果：精度、准确度、召回率、f1值
@@ -131,6 +142,8 @@ class Prediction():
                 print('--------------- 第', j, '次采样 ------------------')
                 path = config.config_path_compare_test(j) # 修改数据
                 self.initData(path)
+                _x = self.X.to_numpy()
+                _y = data_utils.unify_lable(self.y)
 
                 for train_index, test_index in sfolder.split(_x, _y):
                     X_train, X_test = _x[train_index], _x[test_index]
@@ -192,61 +205,15 @@ class Prediction():
         for key, (name, i) in enumerate(regs):
             aver = 0
             for j in range(k):
-                # RANDOM_OVER_SAMPLER_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + '实验' + '/对比实验/' + str(
-                #     j) + '/随机过采样-采样-汇总表.csv'
-                # SMOTE_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ '实验' +'/对比实验/'+ str(j) +'/SMOTE-采样-汇总表.csv'
-                # SMOTE_BORDERLINE1_COMPARE_MERGE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ '实验' +'/对比实验/'+ str(j) +'/SMOTE_Borderline1-采样-汇总表.csv'
-                # SMOTE_D_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ '实验' +'/对比实验/'+ str(j) +'/SMOTE_D-采样-汇总表.csv'
-                # SMOTE_Borderline_D_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/'+ '实验' +'/对比实验/'+ str(j) +'/SMOTE_Borderline_D-采样-汇总表.csv'
-
-                ''' 修改论文数据的时候使用 '''
-                RANDOM_OVER_SAMPLER_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + constants.PAPER_VERSION + '/对比实验/' + str(
-                    j) + '/随机过采样-采样-汇总表.csv'
-                SMOTE_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + constants.PAPER_VERSION + '/对比实验/' + str(
-                    j) + '/SMOTE-采样-汇总表.csv'
-                SMOTE_BORDERLINE1_COMPARE_MERGE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + constants.PAPER_VERSION + '/对比实验/' + str(
-                    j) + '/SMOTE_Borderline1-采样-汇总表.csv'
-                SMOTE_D_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + constants.PAPER_VERSION + '/对比实验/' + str(
-                    j) + '/SMOTE_D-采样-汇总表.csv'
-                SMOTE_Borderline_D_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + constants.PAPER_VERSION + '/对比实验/' + str(
-                    j) + '/SMOTE_Borderline_D-采样-汇总表.csv'
-
-                # 舌象-证，数据
-                # if config.IS_SHE:
-                #     RANDOM_OVER_SAMPLER_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/舌象/对比实验/' + str(
-                #         j) + '/随机过采样-采样-汇总表.csv'
-                #     SMOTE_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/舌象/对比实验/' + str(
-                #         j) + '/SMOTE-采样-汇总表.csv'
-                #     SMOTE_BORDERLINE1_COMPARE_MERGE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/舌象/对比实验/' + str(
-                #         j) + '/SMOTE_Borderline1-采样-汇总表.csv'
-                #     SMOTE_D_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/舌象/对比实验/' + str(
-                #         j) + '/SMOTE_D-采样-汇总表.csv'
-                #     SMOTE_Borderline_D_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/舌象/对比实验/' + str(
-                #         j) + '/SMOTE_Borderline_D-采样-汇总表.csv'
-
-                # 舌象-证，数据
-                ''' 修改论文数据的时候使用 '''
-                if config.IS_SHE:
-                    RANDOM_OVER_SAMPLER_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + constants.PAPER_VERSION + '/症状_舌象/对比实验/' + str(
-                        j) + '/随机过采样-采样-汇总表.csv'
-                    SMOTE_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + constants.PAPER_VERSION + '/症状_舌象/对比实验/' + str(
-                        j) + '/SMOTE-采样-汇总表.csv'
-                    SMOTE_BORDERLINE1_COMPARE_MERGE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + constants.PAPER_VERSION + '/症状_舌象/对比实验/' + str(
-                        j) + '/SMOTE_Borderline1-采样-汇总表.csv'
-                    SMOTE_D_MERGE_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + constants.PAPER_VERSION + '/症状_舌象/对比实验/' + str(
-                        j) + '/SMOTE_D-采样-汇总表.csv'
-                    SMOTE_Borderline_D_COMPARE_CSV_PATH = constants.OS_PATH + '/output/SMOTE/' + constants.PAPER_VERSION + '/症状_舌象/对比实验/' + str(
-                        j) + '/SMOTE_Borderline_D-采样-汇总表.csv'
-
-                path = SMOTE_Borderline_D_COMPARE_CSV_PATH
+                path = config.config_path_compare_test(j) # 修改数据
                 self.initData(path)
 
-                if name == 'Random Forest' or name == 'Decision Tree':  # 这两个分类器没有 decision_function 方法
+                if name == models.Random_Forest or name == models.Decision_Tree or name == models.XGBOOST:  # 这两个分类器没有 decision_function 方法
                     y_pred_proba = i.fit(self.X_train, self.y_train).predict_proba(self.X_test)
-                    fpr, tpr, threshold = roc_curve(self.y_test, y_pred_proba[:, 1], pos_label=2)  # 计算真正率和假正率
+                    fpr, tpr, threshold = roc_curve(self.y_test, y_pred_proba[:, 1], pos_label=1)  # 计算真正率和假正率
                 else:
                     y_pred_proba = i.fit(self.X_train, self.y_train).decision_function(self.X_test)
-                    fpr, tpr, threshold = roc_curve(self.y_test, y_pred_proba, pos_label=2)  # 计算真正率和假正率
+                    fpr, tpr, threshold = roc_curve(self.y_test, y_pred_proba, pos_label=1)  # 计算真正率和假正率
 
                 roc_auc = auc(fpr, tpr)
                 aver += roc_auc
@@ -256,26 +223,31 @@ class Prediction():
     def roc(self,regs):
         self.misc.figure()
         color = ['r','g','b','c','y']
+        # sfolder = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
+        _x = self.X.to_numpy()
+        _y = data_utils.unify_lable(self.y)
+
         for key,(name, i) in enumerate(regs):
-            if name == 'Random Forest' or name == 'Decision Tree':  # 这两个分类器没有 decision_function 方法
+            # aver_auc = []
+            # for train_index, test_index in sfolder.split(_x, _y):
+            #     X_train, X_test = _x[train_index], _x[test_index]
+            #     y_train, y_test = _y[train_index], _y[test_index]
+
+            if name == models.Random_Forest or name == models.Decision_Tree or name == models.XGBOOST:  # 这两个分类器没有 decision_function 方法
                 y_pred_proba = i.fit(self.X_train, self.y_train).predict_proba(self.X_test)
-                fpr,tpr,threshold = roc_curve(self.y_test, y_pred_proba[:,1], pos_label=2) # 计算真正率和假正率
+                fpr, tpr, threshold = roc_curve(self.y_test, y_pred_proba[:, 1], pos_label=1)  # 计算真正率和假正率
             else:
                 y_pred_proba = i.fit(self.X_train, self.y_train).decision_function(self.X_test)
-                fpr,tpr,threshold = roc_curve(self.y_test, y_pred_proba, pos_label=2) # 计算真正率和假正率
+                fpr, tpr, threshold = roc_curve(self.y_test, y_pred_proba, pos_label=1)  # 计算真正率和假正率
 
-            # 汇总表 - 舌象: MERGE_CSV_DIA_TONGUE_PATH
-            # 随机过采样: TUE_RANDOM_OVER_SAMPLER_CSV_PATH
-            # SMOTE: TUE_SMOTE_MERGE_CSV_PATH
-            # SMOTE
-            # Borderline1: TUE_SMOTE_BORDERLINE1_MERGE_CSV_PATH
-            # SMOTE_D: TUE_SMOTE_D_MERGE_CSV_PATH
-            # SMOTE_BORDERLINE_D: TUE_SMOTE_Borderline_D_CSV_PATH
 
             roc_auc = auc(fpr,tpr)
 
+
+            # print('模型：',name)
+            # print('auc：',aver_auc)
             # 绘图
-            title = '原始数据\'s ROC'
+            title = ''
             if config.PATH == constants.SMOTE_MERGE_CSV_PATH or config.PATH == constants.TUE_SMOTE_MERGE_CSV_PATH:
                 title = 'SMOTE \'s ROC'
             elif config.PATH == constants.SMOTE_BORDERLINE1_MERGE_CSV_PATH or config.PATH == constants.TUE_SMOTE_BORDERLINE1_MERGE_CSV_PATH:
@@ -286,9 +258,11 @@ class Prediction():
                 title = 'SMOTE Borderline D\'s ROC'
             elif config.PATH == constants.RANDOM_OVER_SAMPLER_CSV_PATH or config.PATH == constants.TUE_RANDOM_OVER_SAMPLER_CSV_PATH:
                 title = 'RANDOM OVER SAMPLER\'s ROC'
-            self.misc.plotAUC(fpr, tpr, roc_auc, color=color[key], label=name, title = title)
+            self.misc.plotAUC(fpr, tpr, roc_auc, color=color[key], label=name, title=title)
 
         self.misc.show()
+
+
 
 
 
@@ -298,18 +272,18 @@ if __name__ == "__main__":
 
     # 预测
     regs = [
-            (models.Logisitic_RegressionCV,models.logisiticRegression()),
-            (models.SVC,models.SVM()),
-            (models.Random_Forest,models.randomForestClassifier()),
-            (models.Decision_Tree,models.decisionTree()),
+            # (models.Logisitic_RegressionCV,models.logisiticRegression()),
+            # (models.SVC,models.SVM()),
+            # (models.Random_Forest,models.randomForestClassifier()),
+            # (models.Decision_Tree,models.decisionTree()),
             # ('Adaboost',models.adaboostClassifier()),
             (models.XGBOOST, models.xgboost())
             # ('NB', pre.NB())
             ]
     # estimators = [pre.logisiticRegression(), pre.SVM(), pre.decisionTree(), pre.randomForestClassifier(), pre.adaboostClassifier()]
     # pre.fit(regs)
-    # pre.predict(regs)
-    pre.predictAverage(regs)
+    pre.predict(regs)
+    # pre.predictAverage(regs)
 
     # 交叉验证
     # pre.crossScore(regs)

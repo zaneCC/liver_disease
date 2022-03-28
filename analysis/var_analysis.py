@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 import sys
+
+from xgboost import plot_importance
+
 sys.path.append(r'/Users/hear9000/Documents/codes/python_code/liver_disease/liver_disease/')
 # sys.path.append(r'E:/liver_disease/liver_disease')
 import constants,config
@@ -12,7 +15,9 @@ import sklearn.metrics as metrics
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import os
-import matplotlib.ticker as ticker
+import config
+import analysis.models.mlearn_models as models
+import utils.data_utils as data_utils
 
 ''' 症状-证
 汇总表-未做特征选择:    MERGE_CSV_PATH
@@ -48,6 +53,7 @@ class VarAnalysis():
         self.read_data()
         
     def read_data(self,path=PATH):
+        config.PATH = path # 重要变量分析，不同采样获取其最佳模型参数，需修改当前数据集
         self.df = pd.read_csv(path)
         cols = self.df.columns.values.tolist()
         # cols.remove('INHOSPTIAL_ID')
@@ -103,23 +109,6 @@ class VarAnalysis():
 
     # 随机森林
     def get_RFC_important_var(self, top=20, k=50):
-        # 随机过采样-最优参数:         {'criterion': 'entropy', 'max_depth': 20, 'max_features': 0.2, 'min_samples_split': 2, 'n_estimators': 40}    AUC:0.82
-        # SMOTE-最优参数：            {'criterion': 'entropy', 'max_depth': 12, 'max_features': 0.4, 'min_samples_split': 4, 'n_estimators': 16}    AUC:0.80
-        # SMOTE_Borderline1-最优参数：{'criterion': 'gini', 'max_depth': 13, 'max_features': 0.2, 'min_samples_split': 2, 'n_estimators': 14}   AUC:0.83
-        # SMOTE_D-最优参数：          {'criterion': 'gini', 'max_depth': 13, 'max_features': 0.2, 'min_samples_split': 2, 'n_estimators': 12} AUC:0.86
-        # SMOTE_BORDERLINE_D-最优参数:{'criterion': 'entropy', 'max_depth': 14, 'max_features': 0.6, 'min_samples_split': 2, 'n_estimators': 20}   AUC:0.85
-
-        # 根据样本配置最优参数
-        # if self.path == constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH: # 随机过采样
-        #     criterion = 'entropy';max_depth = 20;max_features=0.2;min_samples_split = 2;n_estimators=40
-        # elif self.path == constants.ANALYSIS_SMOTE_MERGE_CSV_PATH:      # SMOTE
-        #     criterion = 'entropy';max_depth = 12;max_features=0.4;min_samples_split = 4;n_estimators=16
-        # elif self.path == constants.ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH:  # SMOTE_Borderline1
-        #     criterion = 'gini';max_depth = 13;max_features=0.2;min_samples_split = 2;n_estimators=14
-        # elif self.path == constants.ANALYSIS_SMOTE_D_MERGE_CSV_PATH:  # SMOTE_D
-        #     criterion = 'gini';max_depth = 13;max_features=0.2;min_samples_split = 2;n_estimators=12
-        # elif self.path == constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH:  # SMOTE_BORDERLINE_D
-        #     criterion = 'entropy';max_depth = 14;max_features=0.6;min_samples_split = 2;n_estimators=20
 
         importances = np.zeros(len(self.X_test.columns))
 
@@ -128,7 +117,8 @@ class VarAnalysis():
             rfc = models.randomForestClassifier()
             rfc.fit(self.X_train,self.y_train)
             # test_result = rfc.predict(self.X_test)
-            importances += rfc.feature_importances_
+            f_importance = rfc.feature_importances_
+            importances += f_importance
             # 模型评估
             # print('随机森林准确度：')
             # print(metrics.classification_report(self.y_test,test_result))
@@ -252,29 +242,100 @@ class VarAnalysis():
             f.write("总贡献度："+str(r)+'\n')
         except FileNotFoundError:
             os.mknod(path)
-        
+
+
+    def show_xgboost_var_importance(self):
+        path = config.PATH
+        df = pd.read_csv(path)
+        cols = df.columns.values.tolist()
+        cols.remove('ZHENGHOU1')
+
+        X = df[cols]
+        y = df['ZHENGHOU1']
+
+        _x = X.to_numpy()
+        y = data_utils.unify_lable(y)
+        X_train,X_test,y_train,y_test = train_test_split(X,y,test_size = 0.2,random_state=0)
+
+        xgboost = models.xgboost()
+        model = xgboost.fit(X_train,y_train)
+
+        f_importance = model.feature_importances_
+        f_importance = (f_importance * 1000).astype(int)
+
+        # fig, ax = plt.subplots(figsize=(15, 10))
+
+        features = list(X.columns)
+        indices = np.argsort(f_importance)[::-1]
+        top = 20
+        top_indices = indices[0:top]
+        print(top_indices)
+        top_features = len(top_indices)
+
+        important_features = [features[i] for i in top_indices]
+        titles = ['随机过采样', 'SMOTE', 'SMOTE-BORDERLINE', 'SMOTE-D']
+        # plot_importance(dict(zip(important_features, f_importance)), title='SMOTE')
+
+        # titles = ['随机过采样', 'SMOTE', 'SMOTE-BORDERLINE', 'SMOTE-D']
+        plot_importance(model)
+        plt.show()
+
+    def show_rf_var_importance(self):
+        path = config.PATH
+        df = pd.read_csv(path)
+        cols = df.columns.values.tolist()
+        cols.remove('ZHENGHOU1')
+
+        X = df[cols]
+        y = df['ZHENGHOU1']
+
+        _x = X.to_numpy()
+        y = data_utils.unify_lable(y)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+        rf = models.randomForestClassifier()
+        model = rf.fit(X_train, y_train)
+        f_importance = model.feature_importances_
+        f_importance = (f_importance * 1000).astype(int)
+
+        # fig, ax = plt.subplots(figsize=(15, 10))
+
+        features = list(X.columns)
+        indices = np.argsort(f_importance)[::-1]
+        top = 20
+        top_indices = indices[0:top]
+        print(top_indices)
+        top_features = len(top_indices)
+
+        important_features = [features[i] for i in top_indices]
+        titles = ['随机过采样','SMOTE','SMOTE-BORDERLINE','SMOTE-D']
+        plot_importance(dict(zip(important_features,f_importance)),title='SMOTE-D')
+
+        plt.show()
+
+
 if __name__ == '__main__':
     va = VarAnalysis()
     
     # 决策树    随机森林
-    value = '随机森林'
-    if config.IS_SHE:
-        regs = [
-            ('随机过采样', constants.TUE_ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH),
-            ('SMOTE', constants.TUE_ANALYSIS_SMOTE_MERGE_CSV_PATH),
-            ('SMOTE_Borderline', constants.TUE_ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH),
-            ('SMOTE_D', constants.TUE_ANALYSIS_SMOTE_D_MERGE_CSV_PATH)
-            # ('SMOTE_BORDERLINE_D', constants.TUE_ANALYSIS_SMOTE_Borderline_D_CSV_PATH),
-        ]
-    else:
-        regs = [
-                ('随机过采样',constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH),
-                ('SMOTE',constants.ANALYSIS_SMOTE_MERGE_CSV_PATH),
-                ('SMOTE_Borderline',constants.ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH),
-                ('SMOTE_D',constants.ANALYSIS_SMOTE_D_MERGE_CSV_PATH)
-                # ('SMOTE_BORDERLINE_D',constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH),
-                ]
-
+    # value = '随机森林'
+    # if config.IS_SHE:
+    #     regs = [
+    #         ('随机过采样', constants.TUE_ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH),
+    #         ('SMOTE', constants.TUE_ANALYSIS_SMOTE_MERGE_CSV_PATH),
+    #         ('SMOTE_Borderline', constants.TUE_ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH),
+    #         ('SMOTE_D', constants.TUE_ANALYSIS_SMOTE_D_MERGE_CSV_PATH)
+    #         # ('SMOTE_BORDERLINE_D', constants.TUE_ANALYSIS_SMOTE_Borderline_D_CSV_PATH),
+    #     ]
+    # else:
+    #     regs = [
+    #             ('随机过采样',constants.ANALYSIS_RANDOM_OVER_SAMPLER_CSV_PATH),
+    #             ('SMOTE',constants.ANALYSIS_SMOTE_MERGE_CSV_PATH),
+    #             ('SMOTE_Borderline',constants.ANALYSIS_SMOTE_BORDERLINE1_MERGE_CSV_PATH),
+    #             ('SMOTE_D',constants.ANALYSIS_SMOTE_D_MERGE_CSV_PATH)
+    #             # ('SMOTE_BORDERLINE_D',constants.ANALYSIS_SMOTE_Borderline_D_CSV_PATH),
+    #             ]
+    #
     # for key,(name, path) in enumerate(regs):
     #     va.read_data(path)
     #     # 生成特征贡献度文件
@@ -287,10 +348,12 @@ if __name__ == '__main__':
     #         va.show_important_var(top_features, importances, top_indices, features, key, type=1,title=name)
     #
     # va.show()
+    va.show_xgboost_var_importance()
+    # va.show_rf_var_importance()
 
     # 获得所有样本重要特征
-    va.get_top_important_var_by_file(regs=regs,value=value)
-    va.show()
+    # va.get_top_important_var_by_file(regs=regs,value=value)
+    # va.show()
 
     # top_features, importances, top_indices, features = va.get_RFC_important_var()
     # va.show_important_var(top_features, importances, top_indices, features, title='特征贡献度-随机森林-随机过采样')

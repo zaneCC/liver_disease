@@ -3,7 +3,7 @@ import numpy as np
 import os
 import sys
 
-from sklearn.metrics import f1_score, precision_score
+from sklearn.metrics import f1_score, precision_score, roc_curve, auc
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -79,6 +79,9 @@ def xgboost(trial):
 
 
 CURRENT_MODEL = models.XGBOOST
+F1 = 'f1'
+AUC = 'auc'
+CURRENT_TAG = AUC
 def objective(trial):
 
     X_train, y_train, X_test, y_test = split()
@@ -97,8 +100,8 @@ def objective(trial):
         classifier_obj = sklearn.svm.SVC(C=svc_c, gamma="auto")
 
     elif CURRENT_MODEL == models.Random_Forest: # Random Forest
-        rf_max_depth = trial.suggest_int("rf_max_depth", 2, 32, log=True)
-        rf_n_estimators = trial.suggest_int("rf_n_estimators", 5, 20, log=True)
+        rf_max_depth = trial.suggest_int("max_depth", 2, 32, log=True)
+        rf_n_estimators = trial.suggest_int("n_estimators", 5, 20, log=True)
         rf_criterion = trial.suggest_categorical("criterion", ["entropy", "gini"])
         classifier_obj = sklearn.ensemble.RandomForestClassifier(
             max_depth=rf_max_depth, n_estimators=rf_n_estimators, criterion=rf_criterion
@@ -113,11 +116,22 @@ def objective(trial):
     elif CURRENT_MODEL == models.XGBOOST: # XGBoost
         classifier_obj = xgboost(trial)
 
-    classifier_obj.fit(X_train, y_train)
-    pre = classifier_obj.predict(X_test)
-    f1 = f1_score(y_test, pre, average=None)
-    precision = precision_score(y_test, pre, average=None)
-    return f1[0],f1[1],precision[0],precision[1]
+    if CURRENT_TAG == F1:
+        classifier_obj.fit(X_train, y_train)
+        pre = classifier_obj.predict(X_test)
+        f1 = f1_score(y_test, pre, average=None)
+        precision = precision_score(y_test, pre, average=None)
+        return f1[0],f1[1],precision[0],precision[1]
+    else:
+        if CURRENT_MODEL == models.Random_Forest or CURRENT_MODEL == models.Decision_Tree or CURRENT_MODEL == models.XGBOOST:  # 这两个分类器没有 decision_function 方法
+            y_pred_proba = classifier_obj.fit(X_train, y_train).predict_proba(X_test)
+            fpr, tpr, threshold = roc_curve(y_test, y_pred_proba[:, 1], pos_label=1)  # 计算真正率和假正率
+        else:
+            y_pred_proba = classifier_obj.fit(X_train, y_train).decision_function(X_test)
+            fpr, tpr, threshold = roc_curve(y_test, y_pred_proba, pos_label=1)  # 计算真正率和假正率
+
+        roc_auc = auc(fpr, tpr)
+        return roc_auc
 
 if __name__ == "__main__":
     # path = constants.TUE_SMOTE_MERGE_CSV_PATH
@@ -133,7 +147,11 @@ if __name__ == "__main__":
 
     # obj = Obj(data)
 
-    study = optuna.create_study(directions=["maximize","maximize","maximize","maximize"])
+    if CURRENT_TAG == AUC:
+        study = optuna.create_study(directions=["maximize"])
+    else:
+        study = optuna.create_study(directions=["maximize","maximize","maximize","maximize"])
+
     print(f"Sampler is {study.sampler.__class__.__name__}")
 
     study.optimize(objective, n_trials=1000)
